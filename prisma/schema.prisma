@@ -1,0 +1,158 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum AnalyticType {
+  DAILY
+  WEEKLY
+  MONTHLY
+}
+
+enum TransactionType {
+  CREDIT
+  DEPOSIT
+}
+
+model Bio {
+  id         String   @id
+  username   String   @unique
+  bio        String?
+  image      String?
+  x          String?
+  tiktok     String?
+  instagram  String?
+  youtube    String?
+  website    String?
+  streamer   Streamer @relation(fields: [streamerId], references: [id])
+  streamerId String   @unique
+  viewer     Viewer   @relation(fields: [viewerId], references: [id])
+  viewerId   String   @unique
+}
+
+model Configuration {
+  id         String   @id
+  alert      Json?
+  mediashare Json?
+  qr_code    Json?
+  marquee    Json?
+  subhaton   Json?
+  voting     Json?
+  milestone  Json?
+  live_ads   Json?
+  streamer   Streamer @relation(fields: [streamerId], references: [id])
+  streamerId String   @unique
+}
+
+model Token {
+  id                     String                   @id
+  address                String
+  chain                  Int
+  decimal                Int
+  name                   String
+  Support                Support[]
+  AnalyticsMostUsedToken AnalyticsMostUsedToken[]
+}
+
+model Viewer {
+  id                      String                    @id
+  address                 String
+  usd_total_support       Float
+  bio                     Bio?
+  Support                 Support[]
+  TopSupport              TopSupport[]
+  TopSupporter            TopSupporter[]
+  AnalyticsGenerousViewer AnalyticsGenerousViewer[]
+}
+
+model Streamer {
+  id                       String                     @id
+  address                  String                     @unique
+  stream_key               String
+  usd_total_support        Float
+  configuration            Configuration?
+  bio                      Bio?
+  Support                  Support[]
+  TopSupport               TopSupport[]
+  TopSupporter             TopSupporter[]
+  AnalyticsStreamerRevenue AnalyticsStreamerRevenue[]
+}
+
+model Support {
+  id         String   @id
+  hash       String
+  usd_amount Float
+  data       Json
+  token      Token    @relation(fields: [tokenId], references: [id])
+  tokenId    String
+  from       Viewer   @relation(fields: [fromId], references: [id])
+  fromId     String
+  to         Streamer @relation(fields: [toId], references: [id])
+  toId       String
+  Revenue    Revenue? @relation(fields: [revenueId], references: [id])
+  revenueId  String?
+}
+
+model TopSupport {
+  id         String   @id
+  value      Float
+  count      Int
+  streamer   Streamer @relation(fields: [streamerId], references: [id])
+  streamerId String
+  viewer     Viewer   @relation(fields: [viewerId], references: [id])
+  viewerId   String
+}
+
+model TopSupporter {
+  id         String   @id
+  value      Float
+  count      Int
+  streamer   Streamer @relation(fields: [streamerId], references: [id])
+  streamerId String
+  viewer     Viewer   @relation(fields: [viewerId], references: [id])
+  viewerId   String
+}
+
+model Revenue {
+  id           String          @id
+  type         TransactionType
+  adddress     String
+  chain        Int
+  usd_total    Float
+  transactions Support[]
+}
+
+model AnalyticsStreamerRevenue {
+  id         String       @id
+  type       AnalyticType
+  usd_amount Float
+  streamer   Streamer     @relation(fields: [streamerId], references: [id])
+  streamerId String
+}
+
+model AnalyticsGenerousViewer {
+  id         String       @id
+  type       AnalyticType
+  usd_amount Float
+  viewer     Viewer       @relation(fields: [viewerId], references: [id])
+  viewerId   String
+}
+
+model AnalyticsMostUsedToken {
+  id          String       @id
+  type        AnalyticType
+  used_count  Int
+  used_amount Float
+  token       Token        @relation(fields: [tokenId], references: [id])
+  tokenId     String
+}
