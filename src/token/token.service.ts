@@ -1,8 +1,8 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { Prisma, Token } from '@prisma/client';
+import { CreateTokenDTO, QueryTokenDTO } from './dto/token.dto';
 import { PrismaService } from 'src/prisma.service';
 import { generateCustomId } from 'src/utils/utils';
-import { CreateTokenDTO, QueryTokenDTO } from './dto/token.dto';
 
 interface QueryTokenResult {
   tokens: Token[];
@@ -12,16 +12,11 @@ interface QueryTokenResult {
 @Injectable()
 export class TokenService {
   constructor(private readonly prismaService: PrismaService) {}
-
   private readonly logger = new Logger(TokenService.name);
 
   async createToken(payload: CreateTokenDTO): Promise<Token> {
     try {
       const { address, chain, decimal, name, image } = payload;
-      const token = await this.getTokenByAddressAndChain(address, chain);
-      if (token) {
-        throw new Error('Token already exists');
-      }
       return await this.prismaService.token.create({
         data: {
           id: generateCustomId('token'),
@@ -97,7 +92,7 @@ export class TokenService {
         where: {
           address,
           chain,
-          id: generateCustomId('token'),
+          id: token.id,
         },
       });
     } catch (error) {
