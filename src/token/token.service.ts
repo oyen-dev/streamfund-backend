@@ -107,13 +107,12 @@ export class TokenService {
     chain: number,
   ): Promise<Token | null> {
     try {
-      const token = await this.prismaService.token.findFirst({
+      return await this.prismaService.token.findFirst({
         where: {
           address,
           chain,
         },
       });
-      return token;
     } catch (error) {
       this.logger.error('Error in checkTokenIsNotExists', error);
       throw error;

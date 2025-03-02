@@ -1,6 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { Streamer } from '@prisma/client';
 import { PrismaService } from '../prisma.service';
+import { generateCustomId } from 'src/utils/utils';
 
 @Injectable()
 export class StreamerService {
@@ -63,6 +64,21 @@ export class StreamerService {
       return streamer;
     } catch (error) {
       this.logger.error('Error in getStreamerByUsername', error);
+      throw error;
+    }
+  }
+
+  async addStreamer(address: string): Promise<Streamer> {
+    try {
+      return await this.prismaService.streamer.create({
+        data: {
+          id: generateCustomId('streamer'),
+          address,
+          usd_total_support: 0,
+        },
+      });
+    } catch (error) {
+      this.logger.error('Error in addStreamer', error);
       throw error;
     }
   }

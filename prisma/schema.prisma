@@ -19,11 +19,6 @@ enum AnalyticType {
   MONTHLY
 }
 
-enum TransactionType {
-  CREDIT
-  DEPOSIT
-}
-
 model Bio {
   id         String   @id
   username   String   @unique
@@ -80,7 +75,7 @@ model Viewer {
 model Streamer {
   id                       String                     @id
   address                  String                     @unique
-  stream_key               String
+  stream_key               String?
   usd_total_support        Float
   configuration            Configuration?
   bio                      Bio?
@@ -126,9 +121,8 @@ model TopSupporter {
 }
 
 model Revenue {
-  id           String          @id
-  type         TransactionType
-  adddress     String
+  id           String    @id
+  address      String
   chain        Int
   usd_total    Float
   transactions Support[]
