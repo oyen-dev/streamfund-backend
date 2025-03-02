@@ -7,6 +7,7 @@ export class CreateTokenDTO {
   chain: number;
   decimal: number;
   name: string;
+  symbol: string;
   image?: string | null | undefined;
 }
 

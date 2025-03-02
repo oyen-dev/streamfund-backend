@@ -5,9 +5,10 @@ import { TokenModule } from './token/token.module';
 import { PrismaModule } from './prisma.module';
 import { StreamerModule } from './streamer/streamer.module';
 import { SupportModule } from './support/support.module';
+import { ListenerModule } from './listener/listener.module';
 
 @Module({
-  imports: [PrismaModule, TokenModule, StreamerModule, SupportModule],
+  imports: [PrismaModule, TokenModule, StreamerModule, SupportModule, ListenerModule],
   controllers: [AppController],
   providers: [AppService],
 })

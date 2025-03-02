@@ -60,6 +60,7 @@ model Token {
   chain                  Int
   decimal                Int
   name                   String
+  symbol                 String
   image                  String?
   Support                Support[]
   AnalyticsMostUsedToken AnalyticsMostUsedToken[]

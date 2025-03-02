@@ -16,7 +16,7 @@ export class TokenService {
 
   async createToken(payload: CreateTokenDTO): Promise<Token> {
     try {
-      const { address, chain, decimal, name, image } = payload;
+      const { address, chain, decimal, name, image, symbol } = payload;
       return await this.prismaService.token.create({
         data: {
           id: generateCustomId('token'),
@@ -24,6 +24,7 @@ export class TokenService {
           chain,
           decimal,
           name,
+          symbol,
           image,
         },
       });
