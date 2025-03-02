@@ -1,8 +1,8 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { Prisma, Token } from '@prisma/client';
 import { CreateTokenDTO, QueryTokenDTO } from './dto/token.dto';
-import { PrismaService } from 'src/prisma.service';
-import { generateCustomId } from 'src/utils/utils';
+import { PrismaService } from '../prisma.service';
+import { generateCustomId } from '../utils/utils';
 
 interface QueryTokenResult {
   tokens: Token[];

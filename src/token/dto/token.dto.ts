@@ -7,7 +7,7 @@ export class CreateTokenDTO {
   chain: number;
   decimal: number;
   name: string;
-  image?: string;
+  image?: string | null | undefined;
 }
 
 export class QueryTokenDTO extends BaseQueryDTO {

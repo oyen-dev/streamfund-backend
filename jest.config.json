@@ -6,7 +6,7 @@
   ],
   "rootDir": ".",
   "testEnvironment": "node",
-  "testRegex": ".e2e-spec.ts$",
+  "testRegex": ".spec.ts$",
   "coveragePathIgnorePatterns": [
     "node_modules",
     "test-config",
@@ -19,5 +19,6 @@
   ],
   "transform": {
     "^.+\\.(t|j)s$": "ts-jest"
-  }
+  },
+  "coverageDirectory": "coverage"
 }
