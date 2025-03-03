@@ -57,6 +57,7 @@ model Token {
   name                   String
   symbol                 String
   image                  String?
+  coin_gecko_id          String?
   Support                Support[]
   AnalyticsMostUsedToken AnalyticsMostUsedToken[]
 }
@@ -96,7 +97,7 @@ model Support {
   fromId     String
   to         Streamer @relation(fields: [toId], references: [id])
   toId       String
-  Revenue    Revenue? @relation(fields: [revenueId], references: [id])
+  revenue    Revenue? @relation(fields: [revenueId], references: [id])
   revenueId  String?
 }
 

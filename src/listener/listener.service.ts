@@ -51,6 +51,8 @@ export class ListenerService {
               switch (log.eventName) {
                 case 'SupportReceived':
                   this.logger.log('SupportReceived');
+                  const { amount, chain, data, from, streamer, token } =
+                    log.args;
                   break;
                 case 'FeeCollectorChanged':
                   void this.handleFeeCollectorChange(
