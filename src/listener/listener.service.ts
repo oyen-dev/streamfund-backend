@@ -32,13 +32,13 @@ export class ListenerService {
         address: STREAMFUND_CONTRACTS[idx].contract as Address,
         events: [
           parseAbiItem(
-            'event SupportReceived(address indexed streamer, address indexed from, address indexed token, uint256 amount, uint256 chain, bytes data)',
+            'event SupportReceived(address indexed streamer, address indexed from, address indexed token, uint256 chain, uint256 amount, bytes data)',
           ),
           parseAbiItem(
             'event FeeCollectorChanged(address indexed newCollector, uint256 chain)',
           ),
           parseAbiItem(
-            'event TokenAdded(address indexed tokenAddress, uint8 decimals, uint256 chain, string symbol, string name)',
+            'event TokenAdded(address indexed tokenAddress, uint256 chain, uint8 decimals, bytes data)',
           ),
           parseAbiItem(
             'event TokenRemoved(address indexed tokenAddress, uint256 chain)',
@@ -51,8 +51,7 @@ export class ListenerService {
               switch (log.eventName) {
                 case 'SupportReceived':
                   this.logger.log('SupportReceived');
-                  const { amount, chain, data, from, streamer, token } =
-                    log.args;
+                  console.log('SupportReceived', log.args);
                   break;
                 case 'FeeCollectorChanged':
                   void this.handleFeeCollectorChange(
@@ -61,13 +60,7 @@ export class ListenerService {
                   );
                   break;
                 case 'TokenAdded':
-                  void this.handleAddToken({
-                    address: log.args.tokenAddress as Address,
-                    chain: Number(log.args.chain),
-                    decimal: Number(log.args.decimals),
-                    name: log.args.name as string,
-                    symbol: log.args.symbol as string,
-                  });
+                  console.log('TokenAdded', log.args);
 
                   break;
                 case 'TokenRemoved':
