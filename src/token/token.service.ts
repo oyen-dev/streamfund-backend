@@ -1,13 +1,8 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { Prisma, Token } from '@prisma/client';
-import { QueryTokenDTO } from './dto/token.dto';
+import { QueryTokenDTO, QueryTokenResultDTO } from './dto/token.dto';
 import { PrismaService } from '../prisma.service';
 import { generateCustomId } from '../utils/utils';
-
-interface QueryTokenResult {
-  tokens: Token[];
-  count: number;
-}
 
 @Injectable()
 export class TokenService {
@@ -17,9 +12,7 @@ export class TokenService {
   async get(payload: Prisma.TokenWhereInput): Promise<Token | null> {
     try {
       return await this.prismaService.token.findFirst({
-        where: {
-          ...payload,
-        },
+        where: payload,
       });
     } catch (error) {
       this.logger.error('Error in checkTokenIsNotExists', error);
@@ -30,7 +23,7 @@ export class TokenService {
   async query(
     query: QueryTokenDTO,
     opt?: Prisma.TokenWhereInput,
-  ): Promise<QueryTokenResult> {
+  ): Promise<QueryTokenResultDTO> {
     try {
       const { limit, page, q } = query;
       const whereQuery: Partial<Prisma.TokenWhereInput> = {
@@ -85,8 +78,8 @@ export class TokenService {
     try {
       return await this.prismaService.token.create({
         data: {
-          id: generateCustomId('token'),
           ...payload,
+          id: generateCustomId('token'),
         },
       });
     } catch (error) {

@@ -27,7 +27,7 @@ export class ListenerService {
   async watchContracts() {
     await new Promise((resolve) => setTimeout(resolve, 2000));
     this.logger.log('Watching StreamFund contracts');
-    await this.handleInitNativeCoin();
+    await this.handleInit();
 
     this.clients.forEach((client, idx) => {
       client.watchEvent({
@@ -70,7 +70,6 @@ export class ListenerService {
                   // 0xaBE8Be8F97DeC3475eb761e8B120d0F6dCeFdf89,USDT,6,tether,https://assets.coingecko.com/coins/images/325/large/tether.png
                   const decoded = this.decodeData(data as string);
                   const [, symbol, , name, image] = decoded.split(',');
-                  this.logger.log(symbol, name, image);
                   void this.handleAddToken({
                     address: tokenAddress as Address,
                     chain: Number(chain),
@@ -109,15 +108,22 @@ export class ListenerService {
     });
   }
 
-  private async handleInitNativeCoin(): Promise<void> {
+  private async handleInit(): Promise<void> {
     try {
-      this.logger.log('Initializing native coin');
+      this.logger.log('Initializing...');
       for (const contract of STREAMFUND_CONTRACTS) {
-        const { chain, native } = contract;
-        const token = await this.tokenService.get({
-          chain: chain.id,
-          address: native.address,
-        });
+        const { chain, native, feeCollector } = contract;
+        const [token, revenue] = await Promise.all([
+          await this.tokenService.get({
+            chain: chain.id,
+            address: native.address,
+          }),
+          this.revenueService.get({
+            address: feeCollector,
+            chain: chain.id,
+          }),
+        ]);
+
         if (token === null || token === undefined) {
           this.logger.log(
             `Adding native coin ${native.symbol} on chain ${chain.id}`,
@@ -145,6 +151,34 @@ export class ListenerService {
         } else {
           this.logger.log(
             `Native coin ${native.symbol} on chain ${chain.id} already exists`,
+          );
+        }
+
+        if (revenue === null || revenue === undefined) {
+          this.logger.log(
+            `Creating new revenue account for ${feeCollector} on chain ${chain.id}`,
+          );
+          await this.revenueService.create({
+            address: feeCollector,
+            chain: chain.id,
+            usd_total: 0,
+          });
+          this.logger.log(
+            `New revenue account for ${feeCollector} on chain ${chain.id} created successfully`,
+          );
+        } else if (revenue.deletedAt !== null) {
+          this.logger.log(
+            `Re-adding revenue account for ${feeCollector} on chain ${chain.id}`,
+          );
+          await this.revenueService.update(revenue.id, {
+            deletedAt: null,
+          });
+          this.logger.log(
+            `Revenue account for ${feeCollector} on chain ${chain.id} re-added successfully`,
+          );
+        } else {
+          this.logger.log(
+            `Revenue account for ${feeCollector} on chain ${chain.id} already exists`,
           );
         }
       }
@@ -245,17 +279,28 @@ export class ListenerService {
     chain: number,
   ): Promise<void> {
     try {
-      const account = await this.revenueService.getRevenueAccount(
-        address,
-        chain,
-      );
+      const account = await this.revenueService.get({ address, chain });
       if (account === null || account === undefined) {
         this.logger.log(
           `Creating new revenue account for ${address} on chain ${chain}`,
         );
-        await this.revenueService.createNewRevenueAccount(address, chain);
+        await this.revenueService.create({
+          address,
+          chain,
+          usd_total: 0,
+        });
         this.logger.log(
           `New revenue account for ${address} on chain ${chain} created successfully`,
+        );
+      } else if (account.deletedAt !== null) {
+        this.logger.log(
+          `Re-adding revenue account for ${address} on chain ${chain}`,
+        );
+        await this.revenueService.update(account.id, {
+          deletedAt: null,
+        });
+        this.logger.log(
+          `Revenue account for ${address} on chain ${chain} re-added successfully`,
         );
       } else {
         this.logger.log(
