@@ -37,6 +37,7 @@ export class RevenueService {
         where: {
           address,
           chain,
+          deletedAt: null,
         },
       });
     } catch (error) {

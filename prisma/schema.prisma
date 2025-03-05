@@ -20,7 +20,7 @@ enum AnalyticType {
 }
 
 model Bio {
-  id         String   @id
+  id         String   @id @default(cuid())
   username   String   @unique
   bio        String?
   image      String?
@@ -33,10 +33,14 @@ model Bio {
   streamerId String   @unique
   viewer     Viewer   @relation(fields: [viewerId], references: [id])
   viewerId   String   @unique
+
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime?
 }
 
 model Configuration {
-  id         String   @id
+  id         String   @id @default(cuid())
   alert      Json?
   mediashare Json?
   qr_code    Json?
@@ -47,10 +51,14 @@ model Configuration {
   live_ads   Json?
   streamer   Streamer @relation(fields: [streamerId], references: [id])
   streamerId String   @unique
+
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime?
 }
 
 model Token {
-  id                     String                   @id
+  id                     String                   @id @default(cuid())
   address                String
   chain                  Int
   decimal                Int
@@ -60,10 +68,14 @@ model Token {
   coin_gecko_id          String?
   Support                Support[]
   AnalyticsMostUsedToken AnalyticsMostUsedToken[]
+
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime?
 }
 
 model Viewer {
-  id                      String                    @id
+  id                      String                    @id @default(cuid())
   address                 String
   usd_total_support       Float
   bio                     Bio?
@@ -71,10 +83,14 @@ model Viewer {
   TopSupport              TopSupport[]
   TopSupporter            TopSupporter[]
   AnalyticsGenerousViewer AnalyticsGenerousViewer[]
+
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime?
 }
 
 model Streamer {
-  id                       String                     @id
+  id                       String                     @id @default(cuid())
   address                  String                     @unique
   stream_key               String?
   usd_total_support        Float
@@ -84,10 +100,14 @@ model Streamer {
   TopSupport               TopSupport[]
   TopSupporter             TopSupporter[]
   AnalyticsStreamerRevenue AnalyticsStreamerRevenue[]
+
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime?
 }
 
 model Support {
-  id         String   @id
+  id         String   @id @default(cuid())
   hash       String
   usd_amount Float
   data       Json
@@ -99,57 +119,85 @@ model Support {
   toId       String
   revenue    Revenue? @relation(fields: [revenueId], references: [id])
   revenueId  String?
+
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime?
 }
 
 model TopSupport {
-  id         String   @id
+  id         String   @id @default(cuid())
   value      Float
   count      Int
   streamer   Streamer @relation(fields: [streamerId], references: [id])
   streamerId String
   viewer     Viewer   @relation(fields: [viewerId], references: [id])
   viewerId   String
+
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime?
 }
 
 model TopSupporter {
-  id         String   @id
+  id         String   @id @default(cuid())
   value      Float
   count      Int
   streamer   Streamer @relation(fields: [streamerId], references: [id])
   streamerId String
   viewer     Viewer   @relation(fields: [viewerId], references: [id])
   viewerId   String
+
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime?
 }
 
 model Revenue {
-  id           String    @id
+  id           String    @id @default(cuid())
   address      String
   chain        Int
   usd_total    Float
   transactions Support[]
+
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime?
 }
 
 model AnalyticsStreamerRevenue {
-  id         String       @id
+  id         String       @id @default(cuid())
   type       AnalyticType
   usd_amount Float
   streamer   Streamer     @relation(fields: [streamerId], references: [id])
   streamerId String
+
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime?
 }
 
 model AnalyticsGenerousViewer {
-  id         String       @id
+  id         String       @id @default(cuid())
   type       AnalyticType
   usd_amount Float
   viewer     Viewer       @relation(fields: [viewerId], references: [id])
   viewerId   String
+
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime?
 }
 
 model AnalyticsMostUsedToken {
-  id          String       @id
+  id          String       @id @default(cuid())
   type        AnalyticType
   used_count  Int
   used_amount Float
   token       Token        @relation(fields: [tokenId], references: [id])
   tokenId     String
+
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime?
 }

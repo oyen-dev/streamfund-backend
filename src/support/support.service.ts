@@ -120,16 +120,4 @@ export class SupportService {
       throw error;
     }
   }
-
-  async getTokenPrice(address: string, symbol: string): Promise<number> {
-    try {
-      // Call API to get token price
-      console.log(`Getting price for ${symbol} with address ${address}`);
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-      return 1;
-    } catch (error) {
-      this.logger.error('Error in getTokenPrice', error);
-      throw error;
-    }
-  }
 }

@@ -1,9 +1,6 @@
 -- CreateEnum
 CREATE TYPE "AnalyticType" AS ENUM ('DAILY', 'WEEKLY', 'MONTHLY');
 
--- CreateEnum
-CREATE TYPE "TransactionType" AS ENUM ('CREDIT', 'DEPOSIT');
-
 -- CreateTable
 CREATE TABLE "Bio" (
     "id" TEXT NOT NULL,
@@ -17,6 +14,9 @@ CREATE TABLE "Bio" (
     "website" TEXT,
     "streamerId" TEXT NOT NULL,
     "viewerId" TEXT NOT NULL,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+    "deletedAt" TIMESTAMP(3),
 
     CONSTRAINT "Bio_pkey" PRIMARY KEY ("id")
 );
@@ -33,6 +33,9 @@ CREATE TABLE "Configuration" (
     "milestone" JSONB,
     "live_ads" JSONB,
     "streamerId" TEXT NOT NULL,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+    "deletedAt" TIMESTAMP(3),
 
     CONSTRAINT "Configuration_pkey" PRIMARY KEY ("id")
 );
@@ -44,6 +47,12 @@ CREATE TABLE "Token" (
     "chain" INTEGER NOT NULL,
     "decimal" INTEGER NOT NULL,
     "name" TEXT NOT NULL,
+    "symbol" TEXT NOT NULL,
+    "image" TEXT,
+    "coin_gecko_id" TEXT,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+    "deletedAt" TIMESTAMP(3),
 
     CONSTRAINT "Token_pkey" PRIMARY KEY ("id")
 );
@@ -53,6 +62,9 @@ CREATE TABLE "Viewer" (
     "id" TEXT NOT NULL,
     "address" TEXT NOT NULL,
     "usd_total_support" DOUBLE PRECISION NOT NULL,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+    "deletedAt" TIMESTAMP(3),
 
     CONSTRAINT "Viewer_pkey" PRIMARY KEY ("id")
 );
@@ -61,8 +73,11 @@ CREATE TABLE "Viewer" (
 CREATE TABLE "Streamer" (
     "id" TEXT NOT NULL,
     "address" TEXT NOT NULL,
-    "stream_key" TEXT NOT NULL,
+    "stream_key" TEXT,
     "usd_total_support" DOUBLE PRECISION NOT NULL,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+    "deletedAt" TIMESTAMP(3),
 
     CONSTRAINT "Streamer_pkey" PRIMARY KEY ("id")
 );
@@ -77,6 +92,9 @@ CREATE TABLE "Support" (
     "fromId" TEXT NOT NULL,
     "toId" TEXT NOT NULL,
     "revenueId" TEXT,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+    "deletedAt" TIMESTAMP(3),
 
     CONSTRAINT "Support_pkey" PRIMARY KEY ("id")
 );
@@ -88,6 +106,9 @@ CREATE TABLE "TopSupport" (
     "count" INTEGER NOT NULL,
     "streamerId" TEXT NOT NULL,
     "viewerId" TEXT NOT NULL,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+    "deletedAt" TIMESTAMP(3),
 
     CONSTRAINT "TopSupport_pkey" PRIMARY KEY ("id")
 );
@@ -99,6 +120,9 @@ CREATE TABLE "TopSupporter" (
     "count" INTEGER NOT NULL,
     "streamerId" TEXT NOT NULL,
     "viewerId" TEXT NOT NULL,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+    "deletedAt" TIMESTAMP(3),
 
     CONSTRAINT "TopSupporter_pkey" PRIMARY KEY ("id")
 );
@@ -106,10 +130,12 @@ CREATE TABLE "TopSupporter" (
 -- CreateTable
 CREATE TABLE "Revenue" (
     "id" TEXT NOT NULL,
-    "type" "TransactionType" NOT NULL,
-    "adddress" TEXT NOT NULL,
+    "address" TEXT NOT NULL,
     "chain" INTEGER NOT NULL,
     "usd_total" DOUBLE PRECISION NOT NULL,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+    "deletedAt" TIMESTAMP(3),
 
     CONSTRAINT "Revenue_pkey" PRIMARY KEY ("id")
 );
@@ -120,6 +146,9 @@ CREATE TABLE "AnalyticsStreamerRevenue" (
     "type" "AnalyticType" NOT NULL,
     "usd_amount" DOUBLE PRECISION NOT NULL,
     "streamerId" TEXT NOT NULL,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+    "deletedAt" TIMESTAMP(3),
 
     CONSTRAINT "AnalyticsStreamerRevenue_pkey" PRIMARY KEY ("id")
 );
@@ -130,6 +159,9 @@ CREATE TABLE "AnalyticsGenerousViewer" (
     "type" "AnalyticType" NOT NULL,
     "usd_amount" DOUBLE PRECISION NOT NULL,
     "viewerId" TEXT NOT NULL,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+    "deletedAt" TIMESTAMP(3),
 
     CONSTRAINT "AnalyticsGenerousViewer_pkey" PRIMARY KEY ("id")
 );
@@ -141,6 +173,9 @@ CREATE TABLE "AnalyticsMostUsedToken" (
     "used_count" INTEGER NOT NULL,
     "used_amount" DOUBLE PRECISION NOT NULL,
     "tokenId" TEXT NOT NULL,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+    "deletedAt" TIMESTAMP(3),
 
     CONSTRAINT "AnalyticsMostUsedToken_pkey" PRIMARY KEY ("id")
 );

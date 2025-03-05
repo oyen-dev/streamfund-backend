@@ -114,15 +114,15 @@ export class ListenerService {
       this.logger.log('Initializing native coin');
       for (const contract of STREAMFUND_CONTRACTS) {
         const { chain, native } = contract;
-        const token = await this.tokenService.getTokenByAddressAndChain(
-          native.address,
-          chain.id,
-        );
+        const token = await this.tokenService.get({
+          chain: chain.id,
+          address: native.address,
+        });
         if (token === null || token === undefined) {
           this.logger.log(
             `Adding native coin ${native.symbol} on chain ${chain.id}`,
           );
-          await this.tokenService.createToken({
+          await this.tokenService.create({
             address: native.address,
             chain: chain.id,
             decimal: native.decimals,
@@ -131,6 +131,16 @@ export class ListenerService {
           });
           this.logger.log(
             `Native coin ${native.symbol} on chain ${chain.id} added successfully`,
+          );
+        } else if (token.deletedAt !== null) {
+          this.logger.log(
+            `Re-adding native coin ${native.symbol} on chain ${chain.id}`,
+          );
+          await this.tokenService.update(token.id, {
+            deletedAt: null,
+          });
+          this.logger.log(
+            `Native coin ${native.symbol} on chain ${chain.id} re-added successfully`,
           );
         } else {
           this.logger.log(
@@ -147,13 +157,13 @@ export class ListenerService {
   private async handleAddToken(payload: CreateTokenDTO): Promise<void> {
     try {
       const { address, chain, decimal, name, symbol } = payload;
-      const token = await this.tokenService.getTokenByAddressAndChain(
-        address,
+      const token = await this.tokenService.get({
         chain,
-      );
+        address,
+      });
       if (token === null || token === undefined) {
         this.logger.log(`Adding token ${symbol} on chain ${chain}`);
-        await this.tokenService.createToken({
+        await this.tokenService.create({
           address,
           chain,
           decimal,
@@ -161,10 +171,22 @@ export class ListenerService {
           symbol,
         });
         this.logger.log(`Token ${symbol} on chain ${chain} added successfully`);
-        return;
+      } else if (token.deletedAt !== null) {
+        this.logger.log(`Re-adding token ${symbol} on chain ${chain}`);
+        await this.tokenService.update(token.id, {
+          deletedAt: null,
+        });
+        this.logger.log(
+          `Token ${symbol} on chain ${chain} re-added successfully`,
+        );
+      } else {
+        this.logger.log(
+          `Token ${symbol} on chain ${chain} already exists, updating token`,
+        );
+        await this.tokenService.update(token.id, {
+          createdAt: new Date(),
+        });
       }
-
-      this.logger.log(`Token ${symbol} on chain ${chain} already exists`);
     } catch (error) {
       this.logger.error('Error in addToken', error);
       throw error;
@@ -176,17 +198,22 @@ export class ListenerService {
     chain: number,
   ): Promise<void> {
     try {
-      const token = await this.tokenService.getTokenByAddressAndChain(
-        address,
-        chain,
-      );
+      const token = await this.tokenService.get({ address, chain });
       if (token === null || token === undefined) {
         this.logger.log(`Token ${address} on chain ${chain} does not exist`);
+        return;
+      } else if (token.deletedAt !== null) {
+        this.logger.log(
+          `Token ${token.symbol} on chain ${chain} already removed`,
+        );
         return;
       }
 
       this.logger.log(`Removing token ${token.symbol} on chain ${chain}`);
-      await this.tokenService.deleteToken(address, chain);
+      await this.tokenService.delete(token.id, {
+        address: token.address,
+        chain: token.chain,
+      });
       this.logger.log(
         `Token ${token.symbol} on chain ${chain} removed successfully`,
       );

@@ -1,6 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { Prisma, Token } from '@prisma/client';
-import { CreateTokenDTO, QueryTokenDTO } from './dto/token.dto';
+import { QueryTokenDTO } from './dto/token.dto';
 import { PrismaService } from '../prisma.service';
 import { generateCustomId } from '../utils/utils';
 
@@ -14,29 +14,25 @@ export class TokenService {
   constructor(private readonly prismaService: PrismaService) {}
   private readonly logger = new Logger(TokenService.name);
 
-  async createToken(payload: CreateTokenDTO): Promise<Token> {
+  async get(payload: Prisma.TokenWhereInput): Promise<Token | null> {
     try {
-      const { address, chain, decimal, name, image, symbol } = payload;
-      return await this.prismaService.token.create({
-        data: {
-          id: generateCustomId('token'),
-          address,
-          chain,
-          decimal,
-          name,
-          symbol,
-          image,
+      return await this.prismaService.token.findFirst({
+        where: {
+          ...payload,
         },
       });
     } catch (error) {
-      this.logger.error('Error in createToken', error);
+      this.logger.error('Error in checkTokenIsNotExists', error);
       throw error;
     }
   }
 
-  async queryToken(query: QueryTokenDTO): Promise<QueryTokenResult> {
+  async query(
+    query: QueryTokenDTO,
+    opt?: Prisma.TokenWhereInput,
+  ): Promise<QueryTokenResult> {
     try {
-      const { limit, page, chain, q } = query;
+      const { limit, page, q } = query;
       const whereQuery: Partial<Prisma.TokenWhereInput> = {
         OR: [
           {
@@ -52,10 +48,13 @@ export class TokenService {
             },
           },
         ],
+        deletedAt: null,
       };
 
-      if (chain) {
-        whereQuery.chain = chain;
+      if (opt) {
+        if (opt.chain) {
+          whereQuery.chain = opt.chain;
+        }
       }
 
       const [tokens, count] = await this.prismaService.$transaction([
@@ -82,18 +81,29 @@ export class TokenService {
     }
   }
 
-  async deleteToken(address: string, chain: number): Promise<Token> {
+  async create(payload: Prisma.TokenCreateInput): Promise<Token> {
     try {
-      const token = await this.getTokenByAddressAndChain(address, chain);
-      if (!token) {
-        throw new Error('Token not found');
-      }
+      return await this.prismaService.token.create({
+        data: {
+          id: generateCustomId('token'),
+          ...payload,
+        },
+      });
+    } catch (error) {
+      this.logger.error('Error in createToken', error);
+      throw error;
+    }
+  }
 
-      return await this.prismaService.token.delete({
+  async delete(id: string, payload: Prisma.TokenWhereInput): Promise<Token> {
+    try {
+      return await this.prismaService.token.update({
         where: {
-          address,
-          chain,
-          id: token.id,
+          ...payload,
+          id,
+        },
+        data: {
+          deletedAt: new Date(),
         },
       });
     } catch (error) {
@@ -102,19 +112,16 @@ export class TokenService {
     }
   }
 
-  async getTokenByAddressAndChain(
-    address: string,
-    chain: number,
-  ): Promise<Token | null> {
+  async update(id: string, payload: Prisma.TokenUpdateInput): Promise<Token> {
     try {
-      return await this.prismaService.token.findFirst({
+      return await this.prismaService.token.update({
         where: {
-          address,
-          chain,
+          id,
         },
+        data: payload,
       });
     } catch (error) {
-      this.logger.error('Error in checkTokenIsNotExists', error);
+      this.logger.error('Error in updateToken', error);
       throw error;
     }
   }

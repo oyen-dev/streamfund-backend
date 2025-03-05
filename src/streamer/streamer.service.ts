@@ -14,6 +14,7 @@ export class StreamerService {
       const streamer = await this.prismaService.streamer.findFirst({
         where: {
           stream_key,
+          deletedAt: null,
         },
         include: {
           bio: true,
@@ -33,6 +34,7 @@ export class StreamerService {
       const streamer = await this.prismaService.streamer.findFirst({
         where: {
           address,
+          deletedAt: null,
         },
         include: {
           bio: true,
@@ -53,7 +55,9 @@ export class StreamerService {
         where: {
           bio: {
             username,
+            deletedAt: null,
           },
+          deletedAt: null,
         },
         include: {
           bio: true,
