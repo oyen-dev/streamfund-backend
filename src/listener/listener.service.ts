@@ -1,10 +1,11 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { RevenueService } from 'src/revenue/revenue.service';
-import { StreamerService } from 'src/streamer/streamer.service';
-import { CreateTokenDTO } from 'src/token/dto/token.dto';
-import { TokenService } from 'src/token/token.service';
-import { STREAMFUND_CONTRACTS } from 'src/utils/constant';
+import { RevenueService } from '../revenue/revenue.service';
+import { StreamerService } from '../streamer/streamer.service';
+import { CreateTokenDTO } from '../token/dto/token.dto';
+import { TokenService } from '../token/token.service';
+import { STREAMFUND_CONTRACTS } from '../utils/constant';
 import { Address, createPublicClient, http, parseAbiItem } from 'viem';
+import { AbiCoder } from 'ethers';
 
 @Injectable()
 export class ListenerService {
@@ -15,6 +16,7 @@ export class ListenerService {
   ) {}
 
   private readonly logger = new Logger(ListenerService.name);
+  private readonly abiCoder = new AbiCoder();
   private readonly clients = STREAMFUND_CONTRACTS.map((contract) =>
     createPublicClient({
       chain: contract.chain,
@@ -49,29 +51,50 @@ export class ListenerService {
           try {
             logs.forEach((log) => {
               switch (log.eventName) {
-                case 'SupportReceived':
+                case 'SupportReceived': {
                   this.logger.log('SupportReceived');
                   console.log('SupportReceived', log.args);
                   break;
-                case 'FeeCollectorChanged':
+                }
+
+                case 'FeeCollectorChanged': {
                   void this.handleFeeCollectorChange(
                     log.args.newCollector as Address,
                     Number(log.args.chain),
                   );
                   break;
-                case 'TokenAdded':
-                  console.log('TokenAdded', log.args);
+                }
 
+                case 'TokenAdded': {
+                  const { data, chain, decimals, tokenAddress } = log.args;
+                  // 0xaBE8Be8F97DeC3475eb761e8B120d0F6dCeFdf89,USDT,6,tether,https://assets.coingecko.com/coins/images/325/large/tether.png
+                  const decoded = this.decodeData(data as string);
+                  const [, symbol, , name, image] = decoded.split(',');
+                  this.logger.log(symbol, name, image);
+                  void this.handleAddToken({
+                    address: tokenAddress as Address,
+                    chain: Number(chain),
+                    decimal: Number(decimals),
+                    name: name,
+                    symbol: symbol,
+                    image: image ?? null,
+                  });
                   break;
-                case 'TokenRemoved':
+                }
+
+                case 'TokenRemoved': {
                   void this.handleRemoveToken(
                     log.args.tokenAddress as Address,
                     Number(log.args.chain),
                   );
                   break;
-                case 'StreamerAdded':
+                }
+
+                case 'StreamerAdded': {
                   void this.handleAddStreamer(log.args.streamer as Address);
                   break;
+                }
+
                 default:
                   this.logger.log('Unknown event');
                   break;
@@ -129,19 +152,19 @@ export class ListenerService {
         chain,
       );
       if (token === null || token === undefined) {
-        this.logger.log(`Token ${symbol} on chain ${chain} already exists`);
+        this.logger.log(`Adding token ${symbol} on chain ${chain}`);
+        await this.tokenService.createToken({
+          address,
+          chain,
+          decimal,
+          name,
+          symbol,
+        });
+        this.logger.log(`Token ${symbol} on chain ${chain} added successfully`);
         return;
       }
 
-      this.logger.log(`Adding token ${symbol} on chain ${chain}`);
-      await this.tokenService.createToken({
-        address,
-        chain,
-        decimal,
-        name,
-        symbol,
-      });
-      this.logger.log(`Token ${symbol} on chain ${chain} added successfully`);
+      this.logger.log(`Token ${symbol} on chain ${chain} already exists`);
     } catch (error) {
       this.logger.error('Error in addToken', error);
       throw error;
@@ -216,5 +239,9 @@ export class ListenerService {
       this.logger.error('Error in handleCollectorChange', error);
       throw error;
     }
+  }
+
+  private decodeData(data: string): string {
+    return this.abiCoder.decode(['string'], data)[0] as string;
   }
 }

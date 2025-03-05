@@ -34,6 +34,8 @@ describe('TokenService', () => {
       name: 'test',
       image: 'test.png',
       id: 'token-1',
+      coin_gecko_id: null,
+      symbol: 'test',
     };
     prisma.token.create.mockResolvedValue(token);
 
@@ -43,6 +45,7 @@ describe('TokenService', () => {
       decimal: 18,
       name: 'test',
       image: 'test.png',
+      symbol: 'test',
     });
     expect(result).toEqual(token);
   });
@@ -57,6 +60,7 @@ describe('TokenService', () => {
         decimal: 18,
         name: 'test',
         image: 'test.png',
+        symbol: 'test',
       }),
     ).rejects.toThrow('Unexpected error');
   });
@@ -69,6 +73,8 @@ describe('TokenService', () => {
       name: 'test',
       image: 'test.png',
       id: 'token-1',
+      coin_gecko_id: null,
+      symbol: 'test',
     };
 
     prisma.$transaction.mockResolvedValue([[token], 1]);
@@ -84,6 +90,8 @@ describe('TokenService', () => {
       name: 'test',
       image: 'test.png',
       id: 'token-2',
+      coin_gecko_id: null,
+      symbol: 'test',
     };
 
     prisma.$transaction.mockResolvedValue([[tokenB], 1]);
@@ -116,6 +124,8 @@ describe('TokenService', () => {
       name: 'test',
       image: 'test.png',
       id: 'token-1',
+      coin_gecko_id: null,
+      symbol: 'test',
     };
 
     prisma.token.findFirst.mockResolvedValue(token);
@@ -140,6 +150,8 @@ describe('TokenService', () => {
       name: 'test',
       image: 'test.png',
       id: 'token-1',
+      coin_gecko_id: null,
+      symbol: 'test',
     };
 
     prisma.token.findFirst.mockResolvedValue(token);

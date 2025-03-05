@@ -1,7 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { Revenue } from '@prisma/client';
-import { PrismaService } from 'src/prisma.service';
-import { generateCustomId } from 'src/utils/utils';
+import { PrismaService } from '../prisma.service';
+import { generateCustomId } from '../utils/utils';
 
 @Injectable()
 export class RevenueService {
