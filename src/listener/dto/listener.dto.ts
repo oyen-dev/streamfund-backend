@@ -6,3 +6,9 @@ export class DecodedAddTokenEventData {
   tokenId: string;
   uri: string;
 }
+
+export class FeeCollectorChangedData {
+  chain: number;
+  newCollector: string;
+  prevCollector: string;
+}

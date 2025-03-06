@@ -6,7 +6,10 @@ import { TokenService } from '../token/token.service';
 import { STREAMFUND_CONTRACTS } from '../utils/constant';
 import { Address, createPublicClient, http, parseAbiItem } from 'viem';
 import { AbiCoder } from 'ethers';
-import { DecodedAddTokenEventData } from './dto/listener.dto';
+import {
+  DecodedAddTokenEventData,
+  FeeCollectorChangedData,
+} from './dto/listener.dto';
 
 @Injectable()
 export class ListenerService {
@@ -38,7 +41,7 @@ export class ListenerService {
             'event SupportReceived(address indexed streamer, address indexed from, address indexed token, uint256 chain, uint256 amount, bytes data)',
           ),
           parseAbiItem(
-            'event FeeCollectorChanged(address indexed newCollector, uint256 chain)',
+            'event FeeCollectorChanged(address indexed prevCollector, address indexed newCollector, uint256 chain)',
           ),
           parseAbiItem(
             'event TokenAdded(address indexed tokenAddress, uint256 chain, uint8 decimals, bytes data)',
@@ -59,10 +62,12 @@ export class ListenerService {
                 }
 
                 case 'FeeCollectorChanged': {
-                  void this.handleFeeCollectorChange(
-                    log.args.newCollector as Address,
-                    Number(log.args.chain),
-                  );
+                  const { chain, newCollector, prevCollector } = log.args;
+                  void this.handleFeeCollectorChange({
+                    chain: Number(chain),
+                    newCollector: newCollector as Address,
+                    prevCollector: prevCollector as Address,
+                  });
                   break;
                 }
 
@@ -279,37 +284,68 @@ export class ListenerService {
     }
   }
 
-  private async handleFeeCollectorChange(
-    address: string,
-    chain: number,
-  ): Promise<void> {
+  private async handleFeeCollectorChange({
+    chain,
+    newCollector,
+    prevCollector,
+  }: FeeCollectorChangedData): Promise<void> {
     try {
-      const account = await this.revenueService.get({ address, chain });
-      if (account === null || account === undefined) {
+      const prevCol = await this.revenueService.get({
+        address: prevCollector,
+        chain,
+      });
+      const newCol = await this.revenueService.get({
+        address: newCollector,
+        chain,
+      });
+      if (newCol === null || newCol === undefined) {
         this.logger.log(
-          `Creating new revenue account for ${address} on chain ${chain}`,
+          `Creating new revenue account for ${newCollector} on chain ${chain}`,
         );
         await this.revenueService.create({
-          address,
+          address: newCollector,
           chain,
           usd_total: 0,
         });
         this.logger.log(
-          `New revenue account for ${address} on chain ${chain} created successfully`,
+          `New revenue account for ${newCollector} on chain ${chain} created successfully`,
         );
-      } else if (account.deletedAt !== null) {
+      } else if (newCol.deletedAt !== null) {
         this.logger.log(
-          `Re-adding revenue account for ${address} on chain ${chain}`,
+          `Re-adding revenue account for ${newCollector} on chain ${chain}`,
         );
-        await this.revenueService.update(account.id, {
+        await this.revenueService.update(newCol.id, {
           deletedAt: null,
         });
         this.logger.log(
-          `Revenue account for ${address} on chain ${chain} re-added successfully`,
+          `Revenue account for ${newCollector} on chain ${chain} re-added successfully`,
         );
       } else {
         this.logger.log(
-          `Revenue account for ${address} on chain ${chain} already exists`,
+          `Revenue account for ${newCollector} on chain ${chain} already exists`,
+        );
+      }
+
+      if (prevCol === null || prevCol === undefined) {
+        this.logger.log(
+          `Revenue account for ${prevCollector} on chain ${chain} does not exist`,
+        );
+        return;
+      } else if (prevCol.deletedAt !== null) {
+        this.logger.log(
+          `Revenue account for ${prevCollector} on chain ${chain} already removed`,
+        );
+        return;
+      } else {
+        this.logger.log(
+          `Removing revenue account for ${prevCollector} on chain ${chain}`,
+        );
+        await this.revenueService.delete(prevCol.id, {
+          address: prevCol.address,
+          chain: prevCol.chain,
+        });
+        this.logger.log(
+          `Revenue account for ${prevCollector} on chain ${chain} removed successfully`,
         );
       }
     } catch (error) {
