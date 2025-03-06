@@ -6,6 +6,7 @@ import { TokenService } from '../token/token.service';
 import { STREAMFUND_CONTRACTS } from '../utils/constant';
 import { Address, createPublicClient, http, parseAbiItem } from 'viem';
 import { AbiCoder } from 'ethers';
+import { DecodedAddTokenEventData } from './dto/listener.dto';
 
 @Injectable()
 export class ListenerService {
@@ -67,16 +68,17 @@ export class ListenerService {
 
                 case 'TokenAdded': {
                   const { data, chain, decimals, tokenAddress } = log.args;
-                  // 0xaBE8Be8F97DeC3475eb761e8B120d0F6dCeFdf89,USDT,6,tether,https://assets.coingecko.com/coins/images/325/large/tether.png
-                  const decoded = this.decodeData(data as string);
-                  const [, symbol, , name, image] = decoded.split(',');
+                  const decoded = this.decodeAddTokenEventData(
+                    data as `0x${string}`,
+                  );
                   void this.handleAddToken({
                     address: tokenAddress as Address,
                     chain: Number(chain),
                     decimal: Number(decimals),
-                    name: name,
-                    symbol: symbol,
-                    image: image ?? null,
+                    name: decoded.name,
+                    symbol: decoded.symbol,
+                    coinGeckoId: decoded.tokenId,
+                    image: decoded.uri,
                   });
                   break;
                 }
@@ -190,7 +192,8 @@ export class ListenerService {
 
   private async handleAddToken(payload: CreateTokenDTO): Promise<void> {
     try {
-      const { address, chain, decimal, name, symbol } = payload;
+      const { address, chain, decimal, name, symbol, coinGeckoId, image } =
+        payload;
       const token = await this.tokenService.get({
         chain,
         address,
@@ -203,6 +206,8 @@ export class ListenerService {
           decimal,
           name,
           symbol,
+          coin_gecko_id: coinGeckoId,
+          image,
         });
         this.logger.log(`Token ${symbol} on chain ${chain} added successfully`);
       } else if (token.deletedAt !== null) {
@@ -313,7 +318,24 @@ export class ListenerService {
     }
   }
 
-  private decodeData(data: string): string {
-    return this.abiCoder.decode(['string'], data)[0] as string;
+  decodeAddTokenEventData(data: `0x${string}`): DecodedAddTokenEventData {
+    if (!data.startsWith('0x')) {
+      data = '0x' + data;
+    }
+    const decoded = this.abiCoder
+      .decode(['address', 'string', 'string', 'uint8', 'string'], data)
+      .toString();
+
+    const [tokenAddress, name, symbol, decimals, tokenId, uri] =
+      decoded.split(',');
+
+    return {
+      tokenAddress,
+      name,
+      symbol,
+      decimals: Number(decimals),
+      tokenId,
+      uri,
+    };
   }
 }

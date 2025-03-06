@@ -9,6 +9,7 @@ export class CreateTokenDTO {
   decimal: number;
   name: string;
   symbol: string;
+  coinGeckoId: string;
   image?: string | null | undefined;
 }
 
