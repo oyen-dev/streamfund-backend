@@ -3,7 +3,7 @@ import { AppModule } from './app.module';
 import { Logger, ValidationPipe } from '@nestjs/common';
 import { CorsOptions } from '@nestjs/common/interfaces/external/cors-options.interface';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
-import { ListenerService } from './listener/listener.service';
+import { ListenerController } from './listener/listener.controller';
 
 async function bootstrap() {
   const logger = new Logger('MAIN');
@@ -53,8 +53,8 @@ async function bootstrap() {
   await app.listen(PORT, () => {
     logger.log(`Server is running on port: ${PORT}`);
 
-    const listener = app.get<ListenerService>(ListenerService);
-    listener.watchContracts().catch((error) => {
+    const listener = app.get<ListenerController>(ListenerController);
+    listener.watchEvents().catch((error) => {
       logger.error('Error watching contracts', error);
     });
   });
