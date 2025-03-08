@@ -10,7 +10,7 @@ export class CreateTokenDTO {
   name: string;
   symbol: string;
   coinGeckoId: string;
-  image?: string | null | undefined;
+  image: string;
 }
 
 export class QueryTokenResultDTO {

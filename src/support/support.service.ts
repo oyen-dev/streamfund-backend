@@ -7,6 +7,7 @@ import {
   QuerySupportResultDTO,
 } from './dto/support.dto';
 import { generateCustomId } from 'src/utils/utils';
+import { STREAMFUND_FEES } from 'src/utils/constant';
 
 @Injectable()
 export class SupportService {
@@ -20,34 +21,57 @@ export class SupportService {
         data,
         hash,
         usd_amount,
-        revenueId,
-        streamerId,
-        tokenId,
-        viewerId,
-        topSupportId,
-        topSupporterId,
+        token_amount,
+        collector_id,
+        viewer_id,
+        streamer_id,
+        token_id,
+        topSupport_id,
+        topSupporter_id,
       } = payload;
-      const [support, , ,] = await this.prismaService.$transaction([
+      const feeShared = (usd_amount * STREAMFUND_FEES) / 10_000;
+      const [support, , , , ,] = await this.prismaService.$transaction([
         this.prismaService.support.create({
           data: {
-            id: generateCustomId('support'),
+            id: generateCustomId('spt'),
             data,
             hash,
             usd_amount,
-            fromId: viewerId,
-            toId: streamerId,
-            tokenId,
-            revenueId,
+            token_amount,
+            fromId: viewer_id,
+            toId: streamer_id,
+            tokenId: token_id,
+            feeCollectorId: collector_id,
           },
         }),
-        this.prismaService.revenue.update({
+        this.prismaService.feeCollector.update({
           data: {
             usd_total: {
+              increment: feeShared,
+            },
+          },
+          where: {
+            id: collector_id,
+          },
+        }),
+        this.prismaService.viewer.update({
+          data: {
+            usd_total_support: {
               increment: usd_amount,
             },
           },
           where: {
-            id: revenueId,
+            id: viewer_id,
+          },
+        }),
+        this.prismaService.streamer.update({
+          data: {
+            usd_total_support: {
+              increment: usd_amount,
+            },
+          },
+          where: {
+            id: streamer_id,
           },
         }),
         this.prismaService.topSupport.update({
@@ -60,7 +84,7 @@ export class SupportService {
             },
           },
           where: {
-            id: topSupportId,
+            id: topSupport_id,
           },
         }),
         this.prismaService.topSupporter.update({
@@ -73,7 +97,7 @@ export class SupportService {
             },
           },
           where: {
-            id: topSupporterId,
+            id: topSupporter_id,
           },
         }),
       ]);
@@ -92,7 +116,7 @@ export class SupportService {
     try {
       return await this.prismaService.topSupport.create({
         data: {
-          id: generateCustomId('support'),
+          id: generateCustomId('spt'),
           count: 0,
           value: 0,
           streamerId,
@@ -112,7 +136,7 @@ export class SupportService {
     try {
       return await this.prismaService.topSupporter.create({
         data: {
-          id: generateCustomId('supporter'),
+          id: generateCustomId('tsr'),
           count: 0,
           value: 0,
           streamerId,
@@ -152,7 +176,7 @@ export class SupportService {
           },
           {
             data: {
-              string_contains: q,
+              contains: q,
               mode: 'insensitive',
             },
           },
@@ -198,7 +222,10 @@ export class SupportService {
   async create(paylod: Prisma.SupportCreateInput): Promise<Support> {
     try {
       return await this.prismaService.support.create({
-        data: paylod,
+        data: {
+          ...paylod,
+          id: generateCustomId('spt'),
+        },
       });
     } catch (error) {
       this.logger.error('Error in createSupport', error);

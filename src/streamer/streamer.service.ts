@@ -1,7 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { Prisma, Streamer } from '@prisma/client';
 import { PrismaService } from '../prisma.service';
-import { generateCustomId, generateRandomString } from '../utils/utils';
+import { generateCustomId } from '../utils/utils';
 import { QueryStreamerDTO, QueryStreamerResultDTO } from './dto/streamer.dto';
 
 @Injectable()
@@ -83,8 +83,7 @@ export class StreamerService {
       return await this.prismaService.streamer.create({
         data: {
           ...paylod,
-          stream_key: `SK-${generateRandomString(32)}`,
-          id: generateCustomId('streamer'),
+          id: generateCustomId('str'),
         },
       });
     } catch (error) {

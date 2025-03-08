@@ -79,7 +79,7 @@ export class TokenService {
       return await this.prismaService.token.create({
         data: {
           ...payload,
-          id: generateCustomId('token'),
+          id: generateCustomId('tkn'),
         },
       });
     } catch (error) {

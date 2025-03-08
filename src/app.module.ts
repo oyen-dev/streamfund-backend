@@ -6,11 +6,21 @@ import { PrismaModule } from './prisma.module';
 import { StreamerModule } from './streamer/streamer.module';
 import { SupportModule } from './support/support.module';
 import { ListenerModule } from './listener/listener.module';
-import { RevenueModule } from './revenue/revenue.module';
+import { FeeCollectorModule } from './feecollector/feecollector.module';
 import { CoingeckoModule } from './coingecko/coingecko.module';
+import { TopModule } from './top/top.module';
 
 @Module({
-  imports: [PrismaModule, TokenModule, StreamerModule, SupportModule, ListenerModule, RevenueModule, CoingeckoModule],
+  imports: [
+    PrismaModule,
+    TokenModule,
+    StreamerModule,
+    SupportModule,
+    ListenerModule,
+    FeeCollectorModule,
+    CoingeckoModule,
+    TopModule,
+  ],
   controllers: [AppController],
   providers: [AppService],
 })

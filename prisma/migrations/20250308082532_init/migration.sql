@@ -12,8 +12,8 @@ CREATE TABLE "Bio" (
     "instagram" TEXT,
     "youtube" TEXT,
     "website" TEXT,
-    "streamerId" TEXT NOT NULL,
-    "viewerId" TEXT NOT NULL,
+    "streamer_id" TEXT NOT NULL,
+    "viewer_id" TEXT NOT NULL,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
     "deletedAt" TIMESTAMP(3),
@@ -32,7 +32,7 @@ CREATE TABLE "Configuration" (
     "voting" JSONB,
     "milestone" JSONB,
     "live_ads" JSONB,
-    "streamerId" TEXT NOT NULL,
+    "streamer_id" TEXT NOT NULL,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
     "deletedAt" TIMESTAMP(3),
@@ -48,8 +48,8 @@ CREATE TABLE "Token" (
     "decimal" INTEGER NOT NULL,
     "name" TEXT NOT NULL,
     "symbol" TEXT NOT NULL,
-    "image" TEXT,
-    "coin_gecko_id" TEXT,
+    "image" TEXT NOT NULL,
+    "coin_gecko_id" TEXT NOT NULL,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
     "deletedAt" TIMESTAMP(3),
@@ -87,14 +87,15 @@ CREATE TABLE "Support" (
     "id" TEXT NOT NULL,
     "hash" TEXT NOT NULL,
     "usd_amount" DOUBLE PRECISION NOT NULL,
-    "data" JSONB NOT NULL,
+    "token_amount" BIGINT NOT NULL,
+    "data" TEXT NOT NULL,
     "tokenId" TEXT NOT NULL,
     "fromId" TEXT NOT NULL,
     "toId" TEXT NOT NULL,
-    "revenueId" TEXT,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
     "deletedAt" TIMESTAMP(3),
+    "feeCollectorId" TEXT NOT NULL,
 
     CONSTRAINT "Support_pkey" PRIMARY KEY ("id")
 );
@@ -128,7 +129,7 @@ CREATE TABLE "TopSupporter" (
 );
 
 -- CreateTable
-CREATE TABLE "Revenue" (
+CREATE TABLE "FeeCollector" (
     "id" TEXT NOT NULL,
     "address" TEXT NOT NULL,
     "chain" INTEGER NOT NULL,
@@ -137,11 +138,11 @@ CREATE TABLE "Revenue" (
     "updatedAt" TIMESTAMP(3) NOT NULL,
     "deletedAt" TIMESTAMP(3),
 
-    CONSTRAINT "Revenue_pkey" PRIMARY KEY ("id")
+    CONSTRAINT "FeeCollector_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
-CREATE TABLE "AnalyticsStreamerRevenue" (
+CREATE TABLE "AnalyticsStreamerFeeCollector" (
     "id" TEXT NOT NULL,
     "type" "AnalyticType" NOT NULL,
     "usd_amount" DOUBLE PRECISION NOT NULL,
@@ -150,7 +151,7 @@ CREATE TABLE "AnalyticsStreamerRevenue" (
     "updatedAt" TIMESTAMP(3) NOT NULL,
     "deletedAt" TIMESTAMP(3),
 
-    CONSTRAINT "AnalyticsStreamerRevenue_pkey" PRIMARY KEY ("id")
+    CONSTRAINT "AnalyticsStreamerFeeCollector_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
@@ -184,25 +185,25 @@ CREATE TABLE "AnalyticsMostUsedToken" (
 CREATE UNIQUE INDEX "Bio_username_key" ON "Bio"("username");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "Bio_streamerId_key" ON "Bio"("streamerId");
+CREATE UNIQUE INDEX "Bio_streamer_id_key" ON "Bio"("streamer_id");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "Bio_viewerId_key" ON "Bio"("viewerId");
+CREATE UNIQUE INDEX "Bio_viewer_id_key" ON "Bio"("viewer_id");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "Configuration_streamerId_key" ON "Configuration"("streamerId");
+CREATE UNIQUE INDEX "Configuration_streamer_id_key" ON "Configuration"("streamer_id");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "Streamer_address_key" ON "Streamer"("address");
 
 -- AddForeignKey
-ALTER TABLE "Bio" ADD CONSTRAINT "Bio_streamerId_fkey" FOREIGN KEY ("streamerId") REFERENCES "Streamer"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "Bio" ADD CONSTRAINT "Bio_streamer_id_fkey" FOREIGN KEY ("streamer_id") REFERENCES "Streamer"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "Bio" ADD CONSTRAINT "Bio_viewerId_fkey" FOREIGN KEY ("viewerId") REFERENCES "Viewer"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "Bio" ADD CONSTRAINT "Bio_viewer_id_fkey" FOREIGN KEY ("viewer_id") REFERENCES "Viewer"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "Configuration" ADD CONSTRAINT "Configuration_streamerId_fkey" FOREIGN KEY ("streamerId") REFERENCES "Streamer"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "Configuration" ADD CONSTRAINT "Configuration_streamer_id_fkey" FOREIGN KEY ("streamer_id") REFERENCES "Streamer"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "Support" ADD CONSTRAINT "Support_tokenId_fkey" FOREIGN KEY ("tokenId") REFERENCES "Token"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
@@ -214,7 +215,7 @@ ALTER TABLE "Support" ADD CONSTRAINT "Support_fromId_fkey" FOREIGN KEY ("fromId"
 ALTER TABLE "Support" ADD CONSTRAINT "Support_toId_fkey" FOREIGN KEY ("toId") REFERENCES "Streamer"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "Support" ADD CONSTRAINT "Support_revenueId_fkey" FOREIGN KEY ("revenueId") REFERENCES "Revenue"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+ALTER TABLE "Support" ADD CONSTRAINT "Support_feeCollectorId_fkey" FOREIGN KEY ("feeCollectorId") REFERENCES "FeeCollector"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "TopSupport" ADD CONSTRAINT "TopSupport_streamerId_fkey" FOREIGN KEY ("streamerId") REFERENCES "Streamer"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
@@ -229,7 +230,7 @@ ALTER TABLE "TopSupporter" ADD CONSTRAINT "TopSupporter_streamerId_fkey" FOREIGN
 ALTER TABLE "TopSupporter" ADD CONSTRAINT "TopSupporter_viewerId_fkey" FOREIGN KEY ("viewerId") REFERENCES "Viewer"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "AnalyticsStreamerRevenue" ADD CONSTRAINT "AnalyticsStreamerRevenue_streamerId_fkey" FOREIGN KEY ("streamerId") REFERENCES "Streamer"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "AnalyticsStreamerFeeCollector" ADD CONSTRAINT "AnalyticsStreamerFeeCollector_streamerId_fkey" FOREIGN KEY ("streamerId") REFERENCES "Streamer"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "AnalyticsGenerousViewer" ADD CONSTRAINT "AnalyticsGenerousViewer_viewerId_fkey" FOREIGN KEY ("viewerId") REFERENCES "Viewer"("id") ON DELETE RESTRICT ON UPDATE CASCADE;

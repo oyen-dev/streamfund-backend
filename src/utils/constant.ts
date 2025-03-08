@@ -11,6 +11,9 @@ export const STREAMFUND_CONTRACTS = [
       symbol: 'ETH',
       decimals: 18,
       address: '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE',
+      coinGeckoId: 'ethereum',
+      image:
+        'https://assets.coingecko.com/coins/images/279/large/ethereum.png?1595348880',
     },
   },
   {
@@ -23,6 +26,9 @@ export const STREAMFUND_CONTRACTS = [
       symbol: 'ETH',
       decimals: 18,
       address: '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE',
+      coinGeckoId: 'ethereum',
+      image:
+        'https://assets.coingecko.com/coins/images/279/large/ethereum.png?1595348880',
     },
   },
   {
@@ -35,6 +41,11 @@ export const STREAMFUND_CONTRACTS = [
       symbol: 'ETH',
       decimals: 18,
       address: '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE',
+      coinGeckoId: 'ethereum',
+      image:
+        'https://assets.coingecko.com/coins/images/279/large/ethereum.png?1595348880',
     },
   },
 ];
+
+export const STREAMFUND_FEES = 250;

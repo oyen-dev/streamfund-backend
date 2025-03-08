@@ -1,5 +1,5 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { RevenueService } from '../revenue/revenue.service';
+import { FeeCollectorService } from '../feecollector/feecollector.service';
 import { StreamerService } from '../streamer/streamer.service';
 import { CreateTokenDTO } from '../token/dto/token.dto';
 import { TokenService } from '../token/token.service';
@@ -8,15 +8,29 @@ import { Address, createPublicClient, http, parseAbiItem } from 'viem';
 import { AbiCoder } from 'ethers';
 import {
   DecodedAddTokenEventData,
+  DecodedSupportReceivedEventData,
   FeeCollectorChangedData,
+  RemoveTokenData,
+  SupportReceivedData,
 } from './dto/listener.dto';
+import { ViewerService } from 'src/streamer/viewer.service';
+import { SupportService } from 'src/support/support.service';
+import { FeeCollector, Token } from '@prisma/client';
+import { CoingeckoService } from 'src/coingecko/coingecko.service';
+import { TopSupportService } from 'src/top/topsupport.service';
+import { TopSupporterService } from 'src/top/topsupporter.service';
 
 @Injectable()
 export class ListenerService {
   constructor(
     private readonly tokenService: TokenService,
     private readonly streamerService: StreamerService,
-    private readonly revenueService: RevenueService,
+    private readonly feeCollectorService: FeeCollectorService,
+    private readonly viewerService: ViewerService,
+    private readonly supportService: SupportService,
+    private readonly topSupportService: TopSupportService,
+    private readonly topSupporterService: TopSupporterService,
+    private readonly coinGeckoService: CoingeckoService,
   ) {}
 
   private readonly logger = new Logger(ListenerService.name);
@@ -57,7 +71,18 @@ export class ListenerService {
               switch (log.eventName) {
                 case 'SupportReceived': {
                   this.logger.log('SupportReceived');
-                  console.log('SupportReceived', log.args);
+                  const { amount, chain, from, streamer, token, data } =
+                    log.args;
+
+                  void this.handleSupportReceived({
+                    amount: Number(amount),
+                    chain: Number(chain),
+                    from: from as Address,
+                    streamer: streamer as Address,
+                    token: token as Address,
+                    data: data as `0x${string}`,
+                    hash: log.transactionHash,
+                  });
                   break;
                 }
 
@@ -89,17 +114,18 @@ export class ListenerService {
                 }
 
                 case 'TokenRemoved': {
-                  void this.handleRemoveToken(
-                    log.args.tokenAddress as Address,
-                    Number(log.args.chain),
-                  );
+                  const { chain, tokenAddress } = log.args;
+                  void this.handleRemoveToken({
+                    address: tokenAddress as Address,
+                    chain: Number(chain),
+                  });
                   break;
                 }
 
-                case 'StreamerAdded': {
-                  void this.handleAddStreamer(log.args.streamer as Address);
-                  break;
-                }
+                // case 'StreamerAdded': {
+                //   void this.handleAddStreamer(log.args.streamer as Address);
+                //   break;
+                // }
 
                 default:
                   this.logger.log('Unknown event');
@@ -115,17 +141,47 @@ export class ListenerService {
     });
   }
 
+  decodeAddTokenEventData(data: `0x${string}`): DecodedAddTokenEventData {
+    const decoded = this.abiCoder
+      .decode(['address', 'string', 'string', 'uint8', 'string'], data)
+      .toString();
+
+    const [tokenAddress, name, symbol, decimals, tokenId, uri] =
+      decoded.split(',');
+
+    return {
+      tokenAddress,
+      name,
+      symbol,
+      decimals: Number(decimals),
+      tokenId,
+      uri,
+    };
+  }
+
+  decodeSupportReceivedEventData(
+    data: `0x${string}`,
+  ): DecodedSupportReceivedEventData {
+    const decoded = this.abiCoder.decode(['string'], data).toString();
+
+    const [username, message] = decoded.split(',');
+    return {
+      username,
+      message,
+    };
+  }
+
   private async handleInit(): Promise<void> {
     try {
       this.logger.log('Initializing...');
       for (const contract of STREAMFUND_CONTRACTS) {
         const { chain, native, feeCollector } = contract;
-        const [token, revenue] = await Promise.all([
+        const [token, collector] = await Promise.all([
           await this.tokenService.get({
             chain: chain.id,
             address: native.address,
           }),
-          this.revenueService.get({
+          this.feeCollectorService.get({
             address: feeCollector,
             chain: chain.id,
           }),
@@ -141,6 +197,8 @@ export class ListenerService {
             decimal: native.decimals,
             name: native.symbol,
             symbol: native.symbol,
+            coin_gecko_id: native.coinGeckoId,
+            image: native.image,
           });
           this.logger.log(
             `Native coin ${native.symbol} on chain ${chain.id} added successfully`,
@@ -161,31 +219,31 @@ export class ListenerService {
           );
         }
 
-        if (revenue === null || revenue === undefined) {
+        if (collector === null) {
           this.logger.log(
-            `Creating new revenue account for ${feeCollector} on chain ${chain.id}`,
+            `Creating new collector account for ${feeCollector} on chain ${chain.id}`,
           );
-          await this.revenueService.create({
+          await this.feeCollectorService.create({
             address: feeCollector,
             chain: chain.id,
             usd_total: 0,
           });
           this.logger.log(
-            `New revenue account for ${feeCollector} on chain ${chain.id} created successfully`,
+            `New collector account for ${feeCollector} on chain ${chain.id} created successfully`,
           );
-        } else if (revenue.deletedAt !== null) {
+        } else if (collector.deletedAt !== null) {
           this.logger.log(
-            `Re-adding revenue account for ${feeCollector} on chain ${chain.id}`,
+            `Re-adding collector account for ${feeCollector} on chain ${chain.id}`,
           );
-          await this.revenueService.update(revenue.id, {
+          await this.feeCollectorService.update(collector.id, {
             deletedAt: null,
           });
           this.logger.log(
-            `Revenue account for ${feeCollector} on chain ${chain.id} re-added successfully`,
+            `Collector account for ${feeCollector} on chain ${chain.id} re-added successfully`,
           );
         } else {
           this.logger.log(
-            `Revenue account for ${feeCollector} on chain ${chain.id} already exists`,
+            `Collector account for ${feeCollector} on chain ${chain.id} already exists`,
           );
         }
       }
@@ -203,7 +261,7 @@ export class ListenerService {
         chain,
         address,
       });
-      if (token === null || token === undefined) {
+      if (token === null) {
         this.logger.log(`Adding token ${symbol} on chain ${chain}`);
         await this.tokenService.create({
           address,
@@ -237,13 +295,13 @@ export class ListenerService {
     }
   }
 
-  private async handleRemoveToken(
-    address: string,
-    chain: number,
-  ): Promise<void> {
+  private async handleRemoveToken({
+    address,
+    chain,
+  }: RemoveTokenData): Promise<void> {
     try {
       const token = await this.tokenService.get({ address, chain });
-      if (token === null || token === undefined) {
+      if (token === null) {
         this.logger.log(`Token ${address} on chain ${chain} does not exist`);
         return;
       } else if (token.deletedAt !== null) {
@@ -292,59 +350,59 @@ export class ListenerService {
     prevCollector,
   }: FeeCollectorChangedData): Promise<void> {
     try {
-      const prevCol = await this.revenueService.get({
+      const prevCol = await this.feeCollectorService.get({
         address: prevCollector,
         chain,
       });
-      const newCol = await this.revenueService.get({
+      const newCol = await this.feeCollectorService.get({
         address: newCollector,
         chain,
       });
-      if (newCol === null || newCol === undefined) {
+      if (newCol === null) {
         this.logger.log(
-          `Creating new revenue account for ${newCollector} on chain ${chain}`,
+          `Creating new collector account for ${newCollector} on chain ${chain}`,
         );
-        await this.revenueService.create({
+        await this.feeCollectorService.create({
           address: newCollector,
           chain,
           usd_total: 0,
         });
         this.logger.log(
-          `New revenue account for ${newCollector} on chain ${chain} created successfully`,
+          `New collector account for ${newCollector} on chain ${chain} created successfully`,
         );
       } else if (newCol.deletedAt !== null) {
         this.logger.log(
-          `Re-adding revenue account for ${newCollector} on chain ${chain}`,
+          `Re-adding collector account for ${newCollector} on chain ${chain}`,
         );
-        await this.revenueService.update(newCol.id, {
+        await this.feeCollectorService.update(newCol.id, {
           deletedAt: null,
         });
         this.logger.log(
-          `Revenue account for ${newCollector} on chain ${chain} re-added successfully`,
+          `Collector account for ${newCollector} on chain ${chain} re-added successfully`,
         );
       } else {
         this.logger.log(
-          `Revenue account for ${newCollector} on chain ${chain} already exists`,
+          `Collector account for ${newCollector} on chain ${chain} already exists`,
         );
       }
 
-      if (prevCol === null || prevCol === undefined) {
+      if (prevCol === null) {
         this.logger.log(
-          `Revenue account for ${prevCollector} on chain ${chain} does not exist`,
+          `Collector account for ${prevCollector} on chain ${chain} does not exist`,
         );
         return;
       } else if (prevCol.deletedAt !== null) {
         this.logger.log(
-          `Revenue account for ${prevCollector} on chain ${chain} already removed`,
+          `Collector account for ${prevCollector} on chain ${chain} already removed`,
         );
         return;
       } else {
         this.logger.log(
-          `Removing revenue account for ${prevCollector} on chain ${chain}`,
+          `Removing collector account for ${prevCollector} on chain ${chain}`,
         );
-        await this.revenueService.delete(prevCol.id);
+        await this.feeCollectorService.delete(prevCol.id);
         this.logger.log(
-          `Revenue account for ${prevCollector} on chain ${chain} removed successfully`,
+          `Collector account for ${prevCollector} on chain ${chain} removed successfully`,
         );
       }
     } catch (error) {
@@ -353,24 +411,125 @@ export class ListenerService {
     }
   }
 
-  decodeAddTokenEventData(data: `0x${string}`): DecodedAddTokenEventData {
-    if (!data.startsWith('0x')) {
-      data = '0x' + data;
+  private async handleSupportReceived({
+    amount,
+    chain,
+    from,
+    streamer,
+    token,
+    data,
+    hash,
+  }: SupportReceivedData): Promise<void> {
+    try {
+      let [
+        streamerData,
+        viewerData,
+        tokenData,
+        collectorData,
+        tstData,
+        tsrData,
+      ] = await Promise.all([
+        this.streamerService.get({ address: streamer, deletedAt: null }),
+        this.viewerService.get({ address: from, deletedAt: null }),
+        this.tokenService.get({ address: token, chain, deletedAt: null }),
+        this.feeCollectorService.get({ chain, deletedAt: null }),
+        this.topSupportService.get({
+          streamer: {
+            address: streamer,
+          },
+          viewer: {
+            address: from,
+          },
+          deletedAt: null,
+        }),
+        this.topSupporterService.get({
+          streamer: {
+            address: streamer,
+          },
+          viewer: {
+            address: from,
+          },
+          deletedAt: null,
+        }),
+      ]);
+
+      tokenData = tokenData as Token;
+      collectorData = collectorData as FeeCollector;
+
+      if (streamerData === null) {
+        streamerData = await this.streamerService.create({
+          address: streamer,
+          usd_total_support: 0,
+        });
+      }
+
+      if (viewerData === null) {
+        viewerData = await this.viewerService.create({
+          address: from,
+          usd_total_support: 0,
+        });
+      }
+
+      if (tstData === null) {
+        tstData = await this.topSupportService.create({
+          count: 0,
+          value: 0,
+          streamer: {
+            connect: {
+              id: streamerData.id,
+            },
+          },
+          viewer: {
+            connect: {
+              id: viewerData.id,
+            },
+          },
+        });
+      }
+
+      if (tsrData === null) {
+        tsrData = await this.topSupporterService.create({
+          count: 0,
+          value: 0,
+          streamer: {
+            connect: {
+              id: streamerData.id,
+            },
+          },
+          viewer: {
+            connect: {
+              id: viewerData.id,
+            },
+          },
+        });
+      }
+
+      const tokenPrice = await this.coinGeckoService.getCoinPrice(
+        tokenData.coin_gecko_id,
+      );
+      const usdAmount = (amount / 10 ** tokenData.decimal) * tokenPrice;
+      const { message, username } = this.decodeSupportReceivedEventData(
+        data as `0x${string}`,
+      );
+      await this.supportService.submitSupport({
+        data: `${username},${message}`,
+        hash,
+        usd_amount: usdAmount,
+        token_amount: amount,
+        collector_id: collectorData.id,
+        viewer_id: viewerData.id,
+        streamer_id: streamerData.id,
+        token_id: tokenData.id,
+        topSupport_id: tstData.id,
+        topSupporter_id: tsrData.id,
+      });
+
+      this.logger.log(
+        `Support received from ${username} to ${streamer} with message ${message}`,
+      );
+    } catch (error) {
+      this.logger.error('Error in handleSupportReceived', error);
+      throw error;
     }
-    const decoded = this.abiCoder
-      .decode(['address', 'string', 'string', 'uint8', 'string'], data)
-      .toString();
-
-    const [tokenAddress, name, symbol, decimals, tokenId, uri] =
-      decoded.split(',');
-
-    return {
-      tokenAddress,
-      name,
-      symbol,
-      decimals: Number(decimals),
-      tokenId,
-      uri,
-    };
   }
 }

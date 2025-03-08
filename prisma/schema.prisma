@@ -20,19 +20,19 @@ enum AnalyticType {
 }
 
 model Bio {
-  id         String   @id @default(cuid())
-  username   String   @unique
-  bio        String?
-  image      String?
-  x          String?
-  tiktok     String?
-  instagram  String?
-  youtube    String?
-  website    String?
-  streamer   Streamer @relation(fields: [streamerId], references: [id])
-  streamerId String   @unique
-  viewer     Viewer   @relation(fields: [viewerId], references: [id])
-  viewerId   String   @unique
+  id          String   @id @default(cuid())
+  username    String   @unique
+  bio         String?
+  image       String?
+  x           String?
+  tiktok      String?
+  instagram   String?
+  youtube     String?
+  website     String?
+  streamer    Streamer @relation(fields: [streamer_id], references: [id])
+  streamer_id String   @unique
+  viewer      Viewer   @relation(fields: [viewer_id], references: [id])
+  viewer_id   String   @unique
 
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
@@ -40,17 +40,17 @@ model Bio {
 }
 
 model Configuration {
-  id         String   @id @default(cuid())
-  alert      Json?
-  mediashare Json?
-  qr_code    Json?
-  marquee    Json?
-  subhaton   Json?
-  voting     Json?
-  milestone  Json?
-  live_ads   Json?
-  streamer   Streamer @relation(fields: [streamerId], references: [id])
-  streamerId String   @unique
+  id          String   @id @default(cuid())
+  alert       Json?
+  mediashare  Json?
+  qr_code     Json?
+  marquee     Json?
+  subhaton    Json?
+  voting      Json?
+  milestone   Json?
+  live_ads    Json?
+  streamer    Streamer @relation(fields: [streamer_id], references: [id])
+  streamer_id String   @unique
 
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
@@ -58,16 +58,16 @@ model Configuration {
 }
 
 model Token {
-  id                     String                   @id @default(cuid())
-  address                String
-  chain                  Int
-  decimal                Int
-  name                   String
-  symbol                 String
-  image                  String?
-  coin_gecko_id          String?
-  Support                Support[]
-  AnalyticsMostUsedToken AnalyticsMostUsedToken[]
+  id                        String                   @id @default(cuid())
+  address                   String
+  chain                     Int
+  decimal                   Int
+  name                      String
+  symbol                    String
+  image                     String
+  coin_gecko_id             String
+  support                   Support[]
+  analytics_most_used_token AnalyticsMostUsedToken[]
 
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
@@ -75,14 +75,14 @@ model Token {
 }
 
 model Viewer {
-  id                      String                    @id @default(cuid())
-  address                 String
-  usd_total_support       Float
-  bio                     Bio?
-  Support                 Support[]
-  TopSupport              TopSupport[]
-  TopSupporter            TopSupporter[]
-  AnalyticsGenerousViewer AnalyticsGenerousViewer[]
+  id                        String                    @id @default(cuid())
+  address                   String
+  usd_total_support         Float
+  bio                       Bio?
+  support                   Support[]
+  top_support               TopSupport[]
+  top_supporter             TopSupporter[]
+  analytics_generous_viewer AnalyticsGenerousViewer[]
 
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
@@ -90,16 +90,16 @@ model Viewer {
 }
 
 model Streamer {
-  id                       String                     @id @default(cuid())
-  address                  String                     @unique
-  stream_key               String?
-  usd_total_support        Float
-  configuration            Configuration?
-  bio                      Bio?
-  Support                  Support[]
-  TopSupport               TopSupport[]
-  TopSupporter             TopSupporter[]
-  AnalyticsStreamerRevenue AnalyticsStreamerRevenue[]
+  id                               String                          @id @default(cuid())
+  address                          String                          @unique
+  stream_key                       String?
+  usd_total_support                Float
+  configuration                    Configuration?
+  bio                              Bio?
+  support                          Support[]
+  top_support                      TopSupport[]
+  top_supporter                    TopSupporter[]
+  analytics_streamer_fee_collector AnalyticsStreamerFeeCollector[]
 
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
@@ -107,22 +107,23 @@ model Streamer {
 }
 
 model Support {
-  id         String   @id @default(cuid())
-  hash       String
-  usd_amount Float
-  data       Json
-  token      Token    @relation(fields: [tokenId], references: [id])
-  tokenId    String
-  from       Viewer   @relation(fields: [fromId], references: [id])
-  fromId     String
-  to         Streamer @relation(fields: [toId], references: [id])
-  toId       String
-  revenue    Revenue? @relation(fields: [revenueId], references: [id])
-  revenueId  String?
+  id           String       @id @default(cuid())
+  hash         String
+  usd_amount   Float
+  token_amount BigInt
+  data         String
+  token        Token        @relation(fields: [tokenId], references: [id])
+  tokenId      String
+  from         Viewer       @relation(fields: [fromId], references: [id])
+  fromId       String
+  to           Streamer     @relation(fields: [toId], references: [id])
+  toId         String
+  feeCollector FeeCollector @relation(fields: [feeCollectorId], references: [id])
 
-  createdAt DateTime  @default(now())
-  updatedAt DateTime  @updatedAt
-  deletedAt DateTime?
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+  deletedAt      DateTime?
+  feeCollectorId String
 }
 
 model TopSupport {
@@ -153,7 +154,7 @@ model TopSupporter {
   deletedAt DateTime?
 }
 
-model Revenue {
+model FeeCollector {
   id           String    @id @default(cuid())
   address      String
   chain        Int
@@ -165,7 +166,7 @@ model Revenue {
   deletedAt DateTime?
 }
 
-model AnalyticsStreamerRevenue {
+model AnalyticsStreamerFeeCollector {
   id         String       @id @default(cuid())
   type       AnalyticType
   usd_amount Float
