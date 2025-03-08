@@ -26,58 +26,24 @@ describe('StreamerService', () => {
     expect(service).toBeDefined();
   });
 
-  it('should return a streamer by stream key', async () => {
+  it('should create a streamer', async () => {
     const streamer: Streamer = {
       id: '1',
       address: '0x',
       stream_key: 'stream_key',
       usd_total_support: 0,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+      deletedAt: null,
     };
 
-    prisma.streamer.findFirst.mockResolvedValue(streamer);
-    expect(await service.getStreamerByStreamKey('stream_key')).toEqual(
-      streamer,
-    );
-  });
-
-  it('should throw an error when streamer is not found by stream key', async () => {
-    prisma.streamer.findFirst.mockRejectedValue(new Error('Unexpected error'));
-    await expect(
-      service.getStreamerByStreamKey('stream_key'),
-    ).rejects.toThrow();
-  });
-
-  it('should return a streamer by address', async () => {
-    const streamer: Streamer = {
-      id: '1',
-      address: '0x',
-      stream_key: 'stream_key',
-      usd_total_support: 0,
-    };
-
-    prisma.streamer.findFirst.mockResolvedValue(streamer);
-    expect(await service.getStreamerByAddress('0x')).toEqual(streamer);
-  });
-
-  it('should throw an error when streamer is not found by address', async () => {
-    prisma.streamer.findFirst.mockRejectedValue(new Error('Unexpected error'));
-    await expect(service.getStreamerByAddress('0x')).rejects.toThrow();
-  });
-
-  it('should return a streamer by username', async () => {
-    const streamer: Streamer = {
-      id: '1',
-      address: '0x',
-      stream_key: 'stream_key',
-      usd_total_support: 0,
-    };
-
-    prisma.streamer.findFirst.mockResolvedValue(streamer);
-    expect(await service.getStreamerByUsername('username')).toEqual(streamer);
-  });
-
-  it('should throw an error when streamer is not found by username', async () => {
-    prisma.streamer.findFirst.mockRejectedValue(new Error('Unexpected error'));
-    await expect(service.getStreamerByUsername('username')).rejects.toThrow();
+    prisma.streamer.create.mockResolvedValue(streamer);
+    expect(
+      await service.create({
+        address: '0x',
+        stream_key: 'stream_key',
+        usd_total_support: 0,
+      }),
+    ).toEqual(streamer);
   });
 });

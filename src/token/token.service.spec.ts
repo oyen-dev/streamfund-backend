@@ -26,6 +26,35 @@ describe('TokenService', () => {
     expect(service).toBeDefined();
   });
 
+  it('should get token', async () => {
+    const token: Token = {
+      address: '0x123',
+      chain: 1,
+      decimal: 18,
+      name: 'test',
+      image: 'test.png',
+      id: 'token-1',
+      coin_gecko_id: 'test',
+      symbol: 'test',
+      createdAt: new Date(),
+      updatedAt: new Date(),
+      deletedAt: null,
+    };
+    prisma.token.findFirst.mockResolvedValue(token);
+    const result = await service.get({ id: 'token-1' });
+    expect(result).toEqual(token);
+  });
+
+  it('should throw an error when getting token fails', async () => {
+    prisma.token.findFirst.mockRejectedValue(new Error('Unexpected error'));
+
+    await expect(
+      service.get({
+        id: 'token-1',
+      }),
+    ).rejects.toThrow('Unexpected error');
+  });
+
   it('should create token', async () => {
     const token: Token = {
       address: '0x123',
@@ -34,18 +63,21 @@ describe('TokenService', () => {
       name: 'test',
       image: 'test.png',
       id: 'token-1',
-      coin_gecko_id: null,
+      coin_gecko_id: 'test',
       symbol: 'test',
+      createdAt: new Date(),
+      updatedAt: new Date(),
+      deletedAt: null,
     };
     prisma.token.create.mockResolvedValue(token);
-
-    const result = await service.createToken({
+    const result = await service.create({
       address: '0x123',
       chain: 1,
       decimal: 18,
       name: 'test',
       image: 'test.png',
       symbol: 'test',
+      coin_gecko_id: 'test',
     });
     expect(result).toEqual(token);
   });
@@ -54,13 +86,14 @@ describe('TokenService', () => {
     prisma.token.create.mockRejectedValue(new Error('Unexpected error'));
 
     await expect(
-      service.createToken({
+      service.create({
         address: '0x123',
         chain: 1,
         decimal: 18,
         name: 'test',
         image: 'test.png',
         symbol: 'test',
+        coin_gecko_id: 'test',
       }),
     ).rejects.toThrow('Unexpected error');
   });
@@ -73,12 +106,15 @@ describe('TokenService', () => {
       name: 'test',
       image: 'test.png',
       id: 'token-1',
-      coin_gecko_id: null,
+      coin_gecko_id: 'test',
       symbol: 'test',
+      createdAt: new Date(),
+      updatedAt: new Date(),
+      deletedAt: null,
     };
 
     prisma.$transaction.mockResolvedValue([[token], 1]);
-    const result = await service.queryToken({ limit: 10, page: 1, q: 'test' });
+    const result = await service.query({ limit: 10, page: 1, q: 'test' });
     expect(result).toEqual({ tokens: [token], count: 1 });
   });
 
@@ -90,17 +126,24 @@ describe('TokenService', () => {
       name: 'test',
       image: 'test.png',
       id: 'token-2',
-      coin_gecko_id: null,
+      coin_gecko_id: 'test',
       symbol: 'test',
+      createdAt: new Date(),
+      updatedAt: new Date(),
+      deletedAt: null,
     };
 
     prisma.$transaction.mockResolvedValue([[tokenB], 1]);
-    const result = await service.queryToken({
-      limit: 10,
-      page: 1,
-      q: 'test',
-      chain: 2,
-    });
+    const result = await service.query(
+      {
+        limit: 10,
+        page: 1,
+        q: 'test',
+      },
+      {
+        chain: 2,
+      },
+    );
     expect(result).toEqual({ tokens: [tokenB], count: 1 });
   });
 
@@ -108,7 +151,7 @@ describe('TokenService', () => {
     prisma.$transaction.mockRejectedValue(new Error('Unexpected error'));
 
     await expect(
-      service.queryToken({
+      service.query({
         limit: 10,
         page: 1,
         q: 'test',
@@ -124,22 +167,16 @@ describe('TokenService', () => {
       name: 'test',
       image: 'test.png',
       id: 'token-1',
-      coin_gecko_id: null,
+      coin_gecko_id: 'test',
       symbol: 'test',
+      createdAt: new Date(),
+      updatedAt: new Date(),
+      deletedAt: null,
     };
 
-    prisma.token.findFirst.mockResolvedValue(token);
-    prisma.token.delete.mockResolvedValue(token);
-    const result = await service.deleteToken(token.address, token.chain);
+    prisma.token.update.mockResolvedValue(token);
+    const result = await service.delete(token.id);
     expect(result).toEqual(token);
-  });
-
-  it('should failed to delete token when token not found', async () => {
-    prisma.token.findFirst.mockResolvedValue(null);
-
-    await expect(service.deleteToken('0x123', 1)).rejects.toThrow(
-      'Token not found',
-    );
   });
 
   it('should throw an error when deleting token fails', async () => {
@@ -150,23 +187,73 @@ describe('TokenService', () => {
       name: 'test',
       image: 'test.png',
       id: 'token-1',
-      coin_gecko_id: null,
+      coin_gecko_id: 'test',
       symbol: 'test',
+      createdAt: new Date(),
+      updatedAt: new Date(),
+      deletedAt: null,
     };
 
-    prisma.token.findFirst.mockResolvedValue(token);
-    prisma.token.delete.mockRejectedValue(new Error('Unexpected error'));
+    prisma.token.update.mockRejectedValue(new Error('Unexpected error'));
 
-    await expect(
-      service.deleteToken(token.address, token.chain),
-    ).rejects.toThrow('Unexpected error');
+    await expect(service.delete(token.id)).rejects.toThrow('Unexpected error');
   });
 
-  it('should throw an error when get token by address and chain fails', async () => {
-    prisma.token.findFirst.mockRejectedValue(new Error('Unexpected error'));
+  it('should update token', async () => {
+    const token: Token = {
+      address: '0x123',
+      chain: 1,
+      decimal: 18,
+      name: 'test',
+      image: 'test.png',
+      id: 'token-1',
+      coin_gecko_id: 'test',
+      symbol: 'test',
+      createdAt: new Date(),
+      updatedAt: new Date(),
+      deletedAt: null,
+    };
 
-    await expect(service.getTokenByAddressAndChain('0x123', 1)).rejects.toThrow(
-      'Unexpected error',
-    );
+    prisma.token.update.mockResolvedValue(token);
+    const result = await service.update(token.id, {
+      address: '0x123',
+      chain: 1,
+      decimal: 18,
+      name: 'test',
+      image: 'test.png',
+      symbol: 'test',
+      coin_gecko_id: 'test',
+    });
+    expect(result).toEqual(token);
+  });
+
+  it('should throw an error when updating token fails', async () => {
+    const token: Token = {
+      address: '0x123',
+      chain: 1,
+      decimal: 18,
+      name: 'test',
+      image: 'test.png',
+      id: 'token-1',
+      coin_gecko_id: 'test',
+      symbol: 'test',
+      createdAt: new Date(),
+      updatedAt: new Date(),
+      deletedAt: null,
+    };
+
+    prisma.token.update.mockRejectedValue(new Error('Unexpected error'));
+
+    await expect(
+      service.update(token.id, {
+        address: '0x123',
+        chain: 1,
+        decimal: 18,
+        name: 'test',
+        image: 'test.png',
+        symbol: 'test',
+        coin_gecko_id: 'test',
+      }),
+    ).rejects.toThrow('Unexpected error');
   });
 });

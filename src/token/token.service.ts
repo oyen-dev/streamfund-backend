@@ -27,7 +27,10 @@ export class TokenService {
     try {
       const { limit, page, q } = query;
       const whereQuery: Partial<Prisma.TokenWhereInput> = {
-        OR: [
+        deletedAt: null,
+      };
+      if (q) {
+        whereQuery.OR = [
           {
             address: {
               contains: q,
@@ -40,9 +43,14 @@ export class TokenService {
               mode: 'insensitive',
             },
           },
-        ],
-        deletedAt: null,
-      };
+          {
+            symbol: {
+              contains: q,
+              mode: 'insensitive',
+            },
+          },
+        ];
+      }
 
       if (opt) {
         if (opt.chain) {

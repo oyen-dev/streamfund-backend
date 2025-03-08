@@ -82,8 +82,12 @@
       "jestGlobalMocks.ts",
       "\\.module\\.ts",
       "\\.dto\\.ts",
-      "<rootDir>/src/app/main.ts",
-      "\\.mock\\.ts"
+      "src/main.ts",
+      "\\.mock\\.ts",
+      "\\.(e2e-)?spec\\.ts",
+      "coverage",
+      "dist",
+      "utils"
     ],
     "collectCoverageFrom": [
       "**/*.(t|j)s"
