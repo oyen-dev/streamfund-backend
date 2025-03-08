@@ -88,11 +88,10 @@ export class TokenService {
     }
   }
 
-  async delete(id: string, payload: Prisma.TokenWhereInput): Promise<Token> {
+  async delete(id: string): Promise<Token> {
     try {
       return await this.prismaService.token.update({
         where: {
-          ...payload,
           id,
         },
         data: {

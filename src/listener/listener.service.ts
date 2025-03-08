@@ -254,10 +254,7 @@ export class ListenerService {
       }
 
       this.logger.log(`Removing token ${token.symbol} on chain ${chain}`);
-      await this.tokenService.delete(token.id, {
-        address: token.address,
-        chain: token.chain,
-      });
+      await this.tokenService.delete(token.id);
       this.logger.log(
         `Token ${token.symbol} on chain ${chain} removed successfully`,
       );
@@ -270,10 +267,15 @@ export class ListenerService {
   private async handleAddStreamer(address: string): Promise<void> {
     try {
       this.logger.log(`Adding streamer ${address}`);
-      const streamer = await this.streamerService.getStreamerByAddress(address);
+      const streamer = await this.streamerService.get({
+        address,
+      });
       if (streamer === null || streamer === undefined) {
         this.logger.log(`Adding streamer ${address}`);
-        await this.streamerService.addStreamer(address);
+        await this.streamerService.create({
+          address,
+          usd_total_support: 0,
+        });
         this.logger.log(`Streamer ${address} added successfully`);
       } else {
         this.logger.log(`Streamer ${address} already exists`);
@@ -340,10 +342,7 @@ export class ListenerService {
         this.logger.log(
           `Removing revenue account for ${prevCollector} on chain ${chain}`,
         );
-        await this.revenueService.delete(prevCol.id, {
-          address: prevCol.address,
-          chain: prevCol.chain,
-        });
+        await this.revenueService.delete(prevCol.id);
         this.logger.log(
           `Revenue account for ${prevCollector} on chain ${chain} removed successfully`,
         );

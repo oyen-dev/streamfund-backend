@@ -1,3 +1,6 @@
+import { Support } from '@prisma/client';
+import { BaseQueryDTO } from 'src/utils/dto';
+
 export class CreateSupportDTO {
   usd_amount: number;
   hash: string;
@@ -8,4 +11,15 @@ export class CreateSupportDTO {
   revenueId: string;
   topSupportId: string;
   topSupporterId: string;
+}
+
+export class QuerySupportDTO extends BaseQueryDTO {
+  tokenId?: string;
+  fromId?: string;
+  toId?: string;
+}
+
+export class QuerySupportResultDTO {
+  supports: Support[];
+  count: number;
 }

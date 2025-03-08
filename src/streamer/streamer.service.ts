@@ -1,88 +1,127 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { Streamer } from '@prisma/client';
+import { Prisma, Streamer } from '@prisma/client';
 import { PrismaService } from '../prisma.service';
-import { generateCustomId } from '../utils/utils';
+import { generateCustomId, generateRandomString } from '../utils/utils';
+import { QueryStreamerDTO, QueryStreamerResultDTO } from './dto/streamer.dto';
 
 @Injectable()
 export class StreamerService {
   constructor(private readonly prismaService: PrismaService) {}
-
   private readonly logger = new Logger(StreamerService.name);
 
-  async getStreamerByStreamKey(stream_key: string): Promise<Streamer | null> {
+  async get(payload: Prisma.StreamerWhereInput): Promise<Streamer | null> {
     try {
-      const streamer = await this.prismaService.streamer.findFirst({
-        where: {
-          stream_key,
-          deletedAt: null,
-        },
+      return await this.prismaService.streamer.findFirst({
+        where: payload,
         include: {
           bio: true,
           configuration: true,
         },
       });
-
-      return streamer;
     } catch (error) {
-      this.logger.error('Error in getStreamerByStreamKey', error);
+      this.logger.error('Error in getStreamer', error);
       throw error;
     }
   }
 
-  async getStreamerByAddress(address: string): Promise<Streamer | null> {
+  async query(
+    query: QueryStreamerDTO,
+    opt?: Prisma.StreamerWhereInput,
+  ): Promise<QueryStreamerResultDTO> {
     try {
-      const streamer = await this.prismaService.streamer.findFirst({
-        where: {
-          address,
-          deletedAt: null,
-        },
-        include: {
-          bio: true,
-          configuration: true,
-        },
-      });
-
-      return streamer;
-    } catch (error) {
-      this.logger.error('Error in getStreamerByAddress', error);
-      throw error;
-    }
-  }
-
-  async getStreamerByUsername(username: string): Promise<Streamer | null> {
-    try {
-      const streamer = await this.prismaService.streamer.findFirst({
-        where: {
-          bio: {
-            username,
-            deletedAt: null,
+      const { limit, page, q } = query;
+      const whereQuery: Prisma.StreamerWhereInput = {
+        OR: [
+          {
+            address: {
+              contains: q,
+              mode: 'insensitive',
+            },
           },
-          deletedAt: null,
-        },
-        include: {
-          bio: true,
-          configuration: true,
-        },
-      });
+        ],
+        deletedAt: null,
+      };
 
-      return streamer;
+      if (opt) {
+        if (opt.bio?.username) {
+          whereQuery.bio = {
+            username: opt.bio.username,
+          };
+        }
+      }
+
+      const [streamers, count] = await this.prismaService.$transaction([
+        this.prismaService.streamer.findMany({
+          where: whereQuery,
+          take: limit,
+          skip: (page - 1) * limit,
+          orderBy: {
+            usd_total_support: 'desc',
+          },
+          include: {
+            bio: true,
+            configuration: true,
+          },
+        }),
+        this.prismaService.streamer.count({
+          where: whereQuery,
+        }),
+      ]);
+
+      return {
+        streamers,
+        count,
+      };
     } catch (error) {
-      this.logger.error('Error in getStreamerByUsername', error);
+      this.logger.error('Error in queryStreamer', error);
       throw error;
     }
   }
 
-  async addStreamer(address: string): Promise<Streamer> {
+  async create(paylod: Prisma.StreamerCreateInput): Promise<Streamer> {
     try {
       return await this.prismaService.streamer.create({
         data: {
+          ...paylod,
+          stream_key: `SK-${generateRandomString(32)}`,
           id: generateCustomId('streamer'),
-          address,
-          usd_total_support: 0,
         },
       });
     } catch (error) {
-      this.logger.error('Error in addStreamer', error);
+      this.logger.error('Error in createStreamer', error);
+      throw error;
+    }
+  }
+
+  async delete(id: string): Promise<Streamer> {
+    try {
+      return await this.prismaService.streamer.update({
+        where: {
+          id,
+        },
+        data: {
+          deletedAt: new Date(),
+        },
+      });
+    } catch (error) {
+      this.logger.error('Error in deleteStreamer', error);
+      throw error;
+    }
+  }
+
+  async update(
+    id: string,
+    payload: Prisma.StreamerUpdateInput,
+  ): Promise<Streamer> {
+    try {
+      return await this.prismaService.streamer.update({
+        where: {
+          id,
+        },
+        data: payload,
+      });
+    } catch (error) {
+      this.logger.error('Error in updateStreamer', error);
       throw error;
     }
   }

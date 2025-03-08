@@ -89,14 +89,10 @@ export class RevenueService {
     }
   }
 
-  async delete(
-    id: string,
-    payload: Prisma.RevenueWhereInput,
-  ): Promise<Revenue> {
+  async delete(id: string): Promise<Revenue> {
     try {
       return await this.prismaService.revenue.update({
         where: {
-          ...payload,
           id,
         },
         data: {
