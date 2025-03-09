@@ -46,7 +46,7 @@ export class FeeCollectorService {
             },
           },
         ],
-        deletedAt: null,
+        deleted_at: null,
       };
 
       if (opt) {
@@ -100,7 +100,7 @@ export class FeeCollectorService {
           id,
         },
         data: {
-          deletedAt: new Date(),
+          deleted_at: new Date(),
         },
       });
     } catch (error) {

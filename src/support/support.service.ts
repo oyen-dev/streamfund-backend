@@ -38,10 +38,10 @@ export class SupportService {
             hash,
             usd_amount,
             token_amount,
-            fromId: viewer_id,
-            toId: streamer_id,
-            tokenId: token_id,
-            feeCollectorId: collector_id,
+            from_id: viewer_id,
+            to_id: streamer_id,
+            token_id,
+            fee_collector_id: collector_id,
           },
         }),
         this.prismaService.feeCollector.update({
@@ -119,8 +119,8 @@ export class SupportService {
           id: generateCustomId('spt'),
           count: 0,
           value: 0,
-          streamerId,
-          viewerId,
+          streamer_id: streamerId,
+          viewer_id: viewerId,
         },
       });
     } catch (error) {
@@ -139,8 +139,8 @@ export class SupportService {
           id: generateCustomId('tsr'),
           count: 0,
           value: 0,
-          streamerId,
-          viewerId,
+          streamer_id: streamerId,
+          viewer_id: viewerId,
         },
       });
     } catch (error) {
@@ -184,14 +184,14 @@ export class SupportService {
       };
 
       if (opt) {
-        if (opt.tokenId) {
-          whereQuery.tokenId = opt.tokenId;
+        if (opt.token_id) {
+          whereQuery.token_id = opt.token_id;
         }
-        if (opt.fromId) {
-          whereQuery.fromId = opt.fromId;
+        if (opt.from_id) {
+          whereQuery.from_id = opt.from_id;
         }
-        if (opt.toId) {
-          whereQuery.toId = opt.toId;
+        if (opt.to_id) {
+          whereQuery.to_id = opt.to_id;
         }
       }
 
@@ -201,7 +201,7 @@ export class SupportService {
           take: limit,
           skip: (page - 1) * limit,
           orderBy: {
-            createdAt: 'desc',
+            created_at: 'desc',
           },
         }),
         this.prismaService.support.count({
@@ -240,7 +240,7 @@ export class SupportService {
           id,
         },
         data: {
-          deletedAt: new Date(),
+          deleted_at: new Date(),
         },
       });
     } catch (error) {

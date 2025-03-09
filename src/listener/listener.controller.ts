@@ -165,12 +165,12 @@ export class ListenerController {
           this.logger.log(
             `Native coin ${native.symbol} on chain ${chain.id} added successfully`,
           );
-        } else if (token.deletedAt !== null) {
+        } else if (token.deleted_at !== null) {
           this.logger.log(
             `Re-adding native coin ${native.symbol} on chain ${chain.id}`,
           );
           await this.tokenService.update(token.id, {
-            deletedAt: null,
+            deleted_at: null,
           });
           this.logger.log(
             `Native coin ${native.symbol} on chain ${chain.id} re-added successfully`,
@@ -193,12 +193,12 @@ export class ListenerController {
           this.logger.log(
             `New collector account for ${feeCollector} on chain ${chain.id} created successfully`,
           );
-        } else if (collector.deletedAt !== null) {
+        } else if (collector.deleted_at !== null) {
           this.logger.log(
             `Re-adding collector account for ${feeCollector} on chain ${chain.id}`,
           );
           await this.feeCollectorService.update(collector.id, {
-            deletedAt: null,
+            deleted_at: null,
           });
           this.logger.log(
             `Collector account for ${feeCollector} on chain ${chain.id} re-added successfully`,
@@ -233,10 +233,10 @@ export class ListenerController {
         tstData,
         tsrData,
       ] = await Promise.all([
-        this.streamerService.get({ address: streamer, deletedAt: null }),
-        this.viewerService.get({ address: from, deletedAt: null }),
-        this.tokenService.get({ address: token, chain, deletedAt: null }),
-        this.feeCollectorService.get({ chain, deletedAt: null }),
+        this.streamerService.get({ address: streamer, deleted_at: null }),
+        this.viewerService.get({ address: from, deleted_at: null }),
+        this.tokenService.get({ address: token, chain, deleted_at: null }),
+        this.feeCollectorService.get({ chain, deleted_at: null }),
         this.topSupportService.get({
           streamer: {
             address: streamer,
@@ -244,7 +244,7 @@ export class ListenerController {
           viewer: {
             address: from,
           },
-          deletedAt: null,
+          deleted_at: null,
         }),
         this.topSupporterService.get({
           streamer: {
@@ -253,7 +253,7 @@ export class ListenerController {
           viewer: {
             address: from,
           },
-          deletedAt: null,
+          deleted_at: null,
         }),
       ]);
 
@@ -364,12 +364,12 @@ export class ListenerController {
         this.logger.log(
           `New collector account for ${newCollector} on chain ${chain} created successfully`,
         );
-      } else if (newCol.deletedAt !== null) {
+      } else if (newCol.deleted_at !== null) {
         this.logger.log(
           `Re-adding collector account for ${newCollector} on chain ${chain}`,
         );
         await this.feeCollectorService.update(newCol.id, {
-          deletedAt: null,
+          deleted_at: null,
         });
         this.logger.log(
           `Collector account for ${newCollector} on chain ${chain} re-added successfully`,
@@ -385,7 +385,7 @@ export class ListenerController {
           `Collector account for ${prevCollector} on chain ${chain} does not exist`,
         );
         return;
-      } else if (prevCol.deletedAt !== null) {
+      } else if (prevCol.deleted_at !== null) {
         this.logger.log(
           `Collector account for ${prevCollector} on chain ${chain} already removed`,
         );
@@ -425,10 +425,10 @@ export class ListenerController {
           image,
         });
         this.logger.log(`Token ${symbol} on chain ${chain} added successfully`);
-      } else if (token.deletedAt !== null) {
+      } else if (token.deleted_at !== null) {
         this.logger.log(`Re-adding token ${symbol} on chain ${chain}`);
         await this.tokenService.update(token.id, {
-          deletedAt: null,
+          deleted_at: null,
         });
         this.logger.log(
           `Token ${symbol} on chain ${chain} re-added successfully`,
@@ -456,7 +456,7 @@ export class ListenerController {
       if (token === null) {
         this.logger.log(`Token ${address} on chain ${chain} does not exist`);
         return;
-      } else if (token.deletedAt !== null) {
+      } else if (token.deleted_at !== null) {
         this.logger.log(
           `Token ${token.symbol} on chain ${chain} already removed`,
         );

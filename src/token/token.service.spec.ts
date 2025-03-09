@@ -38,7 +38,7 @@ describe('TokenService', () => {
       symbol: 'test',
       createdAt: new Date(),
       updatedAt: new Date(),
-      deletedAt: null,
+      deleted_at: null,
     };
     prisma.token.findFirst.mockResolvedValue(token);
     const result = await service.get({ id: 'token-1' });
@@ -67,7 +67,7 @@ describe('TokenService', () => {
       symbol: 'test',
       createdAt: new Date(),
       updatedAt: new Date(),
-      deletedAt: null,
+      deleted_at: null,
     };
     prisma.token.create.mockResolvedValue(token);
     const result = await service.create({
@@ -110,7 +110,7 @@ describe('TokenService', () => {
       symbol: 'test',
       createdAt: new Date(),
       updatedAt: new Date(),
-      deletedAt: null,
+      deleted_at: null,
     };
 
     prisma.$transaction.mockResolvedValue([[token], 1]);
@@ -130,7 +130,7 @@ describe('TokenService', () => {
       symbol: 'test',
       createdAt: new Date(),
       updatedAt: new Date(),
-      deletedAt: null,
+      deleted_at: null,
     };
 
     prisma.$transaction.mockResolvedValue([[tokenB], 1]);
@@ -171,7 +171,7 @@ describe('TokenService', () => {
       symbol: 'test',
       createdAt: new Date(),
       updatedAt: new Date(),
-      deletedAt: null,
+      deleted_at: null,
     };
 
     prisma.token.update.mockResolvedValue(token);
@@ -191,7 +191,7 @@ describe('TokenService', () => {
       symbol: 'test',
       createdAt: new Date(),
       updatedAt: new Date(),
-      deletedAt: null,
+      deleted_at: null,
     };
 
     prisma.token.update.mockRejectedValue(new Error('Unexpected error'));
@@ -211,7 +211,7 @@ describe('TokenService', () => {
       symbol: 'test',
       createdAt: new Date(),
       updatedAt: new Date(),
-      deletedAt: null,
+      deleted_at: null,
     };
 
     prisma.token.update.mockResolvedValue(token);
@@ -239,7 +239,7 @@ describe('TokenService', () => {
       symbol: 'test',
       createdAt: new Date(),
       updatedAt: new Date(),
-      deletedAt: null,
+      deleted_at: null,
     };
 
     prisma.token.update.mockRejectedValue(new Error('Unexpected error'));

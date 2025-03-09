@@ -32,9 +32,9 @@ describe('StreamerService', () => {
       address: '0x',
       stream_key: 'stream_key',
       usd_total_support: 0,
-      createdAt: new Date(),
-      updatedAt: new Date(),
-      deletedAt: null,
+      created_at: new Date(),
+      updated_at: new Date(),
+      deleted_at: null,
     };
 
     prisma.streamer.create.mockResolvedValue(streamer);

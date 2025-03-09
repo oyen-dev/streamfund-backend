@@ -27,7 +27,7 @@ export class TokenService {
     try {
       const { limit, page, q } = query;
       const whereQuery: Partial<Prisma.TokenWhereInput> = {
-        deletedAt: null,
+        deleted_at: null,
       };
       if (q) {
         whereQuery.OR = [
@@ -103,7 +103,7 @@ export class TokenService {
           id,
         },
         data: {
-          deletedAt: new Date(),
+          deleted_at: new Date(),
         },
       });
     } catch (error) {

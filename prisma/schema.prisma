@@ -34,9 +34,9 @@ model Bio {
   viewer      Viewer   @relation(fields: [viewer_id], references: [id])
   viewer_id   String   @unique
 
-  createdAt DateTime  @default(now())
-  updatedAt DateTime  @updatedAt
-  deletedAt DateTime?
+  created_at DateTime  @default(now())
+  updated_at DateTime  @updatedAt
+  deleted_at DateTime?
 }
 
 model Configuration {
@@ -52,26 +52,41 @@ model Configuration {
   streamer    Streamer @relation(fields: [streamer_id], references: [id])
   streamer_id String   @unique
 
-  createdAt DateTime  @default(now())
-  updatedAt DateTime  @updatedAt
-  deletedAt DateTime?
+  created_at DateTime  @default(now())
+  updated_at DateTime  @updatedAt
+  deleted_at DateTime?
+}
+
+model Chain {
+  id                 String  @id @default(cuid())
+  name               String
+  chain_id           Int
+  block_explorer_url String
+  image              String
+  token              Token[]
+
+  created_at   DateTime       @default(now())
+  updated_at   DateTime       @updatedAt
+  deleted_at   DateTime?
+  FeeCollector FeeCollector[]
 }
 
 model Token {
   id                        String                   @id @default(cuid())
   address                   String
-  chain                     Int
   decimal                   Int
   name                      String
   symbol                    String
   image                     String
   coin_gecko_id             String
+  chain                     Chain                    @relation(fields: [chain_id], references: [id])
+  chain_id                  String
   support                   Support[]
   analytics_most_used_token AnalyticsMostUsedToken[]
 
-  createdAt DateTime  @default(now())
-  updatedAt DateTime  @updatedAt
-  deletedAt DateTime?
+  created_at DateTime  @default(now())
+  updated_at DateTime  @updatedAt
+  deleted_at DateTime?
 }
 
 model Viewer {
@@ -84,9 +99,9 @@ model Viewer {
   top_supporter             TopSupporter[]
   analytics_generous_viewer AnalyticsGenerousViewer[]
 
-  createdAt DateTime  @default(now())
-  updatedAt DateTime  @updatedAt
-  deletedAt DateTime?
+  created_at DateTime  @default(now())
+  updated_at DateTime  @updatedAt
+  deleted_at DateTime?
 }
 
 model Streamer {
@@ -101,93 +116,94 @@ model Streamer {
   top_supporter                    TopSupporter[]
   analytics_streamer_fee_collector AnalyticsStreamerFeeCollector[]
 
-  createdAt DateTime  @default(now())
-  updatedAt DateTime  @updatedAt
-  deletedAt DateTime?
+  created_at DateTime  @default(now())
+  updated_at DateTime  @updatedAt
+  deleted_at DateTime?
 }
 
 model Support {
-  id           String       @id @default(cuid())
-  hash         String
-  usd_amount   Float
-  token_amount BigInt
-  data         String
-  token        Token        @relation(fields: [tokenId], references: [id])
-  tokenId      String
-  from         Viewer       @relation(fields: [fromId], references: [id])
-  fromId       String
-  to           Streamer     @relation(fields: [toId], references: [id])
-  toId         String
-  feeCollector FeeCollector @relation(fields: [feeCollectorId], references: [id])
+  id               String       @id @default(cuid())
+  hash             String
+  usd_amount       Float
+  token_amount     BigInt
+  data             String
+  token            Token        @relation(fields: [token_id], references: [id])
+  token_id         String
+  from             Viewer       @relation(fields: [from_id], references: [id])
+  from_id          String
+  to               Streamer     @relation(fields: [to_id], references: [id])
+  to_id            String
+  fee_collector    FeeCollector @relation(fields: [fee_collector_id], references: [id])
+  fee_collector_id String
 
-  createdAt      DateTime  @default(now())
-  updatedAt      DateTime  @updatedAt
-  deletedAt      DateTime?
-  feeCollectorId String
+  created_at DateTime  @default(now())
+  updated_at DateTime  @updatedAt
+  deleted_at DateTime?
 }
 
 model TopSupport {
-  id         String   @id @default(cuid())
-  value      Float
-  count      Int
-  streamer   Streamer @relation(fields: [streamerId], references: [id])
-  streamerId String
-  viewer     Viewer   @relation(fields: [viewerId], references: [id])
-  viewerId   String
+  id          String   @id @default(cuid())
+  value       Float
+  count       Int
+  streamer    Streamer @relation(fields: [streamer_id], references: [id])
+  streamer_id String
+  viewer      Viewer   @relation(fields: [viewer_id], references: [id])
+  viewer_id   String
 
-  createdAt DateTime  @default(now())
-  updatedAt DateTime  @updatedAt
-  deletedAt DateTime?
+  created_at DateTime  @default(now())
+  updated_at DateTime  @updatedAt
+  deleted_at DateTime?
 }
 
 model TopSupporter {
-  id         String   @id @default(cuid())
-  value      Float
-  count      Int
-  streamer   Streamer @relation(fields: [streamerId], references: [id])
-  streamerId String
-  viewer     Viewer   @relation(fields: [viewerId], references: [id])
-  viewerId   String
+  id          String   @id @default(cuid())
+  value       Float
+  count       Int
+  streamer    Streamer @relation(fields: [streamer_id], references: [id])
+  streamer_id String
+  viewer      Viewer   @relation(fields: [viewer_id], references: [id])
+  viewer_id   String
 
-  createdAt DateTime  @default(now())
-  updatedAt DateTime  @updatedAt
-  deletedAt DateTime?
+  created_at DateTime  @default(now())
+  updated_at DateTime  @updatedAt
+  deleted_at DateTime?
 }
 
 model FeeCollector {
   id           String    @id @default(cuid())
   address      String
-  chain        Int
+  chain        Chain     @relation(fields: [chain_id], references: [id])
+  chain_id     String
   usd_total    Float
   transactions Support[]
 
-  createdAt DateTime  @default(now())
-  updatedAt DateTime  @updatedAt
-  deletedAt DateTime?
+  created_at DateTime  @default(now())
+  updated_at DateTime  @updatedAt
+  deleted_at DateTime?
 }
 
 model AnalyticsStreamerFeeCollector {
-  id         String       @id @default(cuid())
-  type       AnalyticType
-  usd_amount Float
-  streamer   Streamer     @relation(fields: [streamerId], references: [id])
-  streamerId String
+  id          String       @id @default(cuid())
+  type        AnalyticType
+  usd_amount  Float
+  streamer    Streamer     @relation(fields: [streamer_id], references: [id])
+  streamer_id String
 
-  createdAt DateTime  @default(now())
-  updatedAt DateTime  @updatedAt
-  deletedAt DateTime?
+  created_at DateTime  @default(now())
+  updated_at DateTime  @updatedAt
+  deleted_at DateTime?
 }
 
 model AnalyticsGenerousViewer {
   id         String       @id @default(cuid())
   type       AnalyticType
   usd_amount Float
-  viewer     Viewer       @relation(fields: [viewerId], references: [id])
-  viewerId   String
+  viewer     Viewer       @relation(fields: [viewer_id], references: [id])
+  viewer_id  String
 
-  createdAt DateTime  @default(now())
-  updatedAt DateTime  @updatedAt
-  deletedAt DateTime?
+  created_at DateTime  @default(now())
+  updated_at DateTime  @updatedAt
+  deleted_at DateTime?
 }
 
 model AnalyticsMostUsedToken {
@@ -195,10 +211,10 @@ model AnalyticsMostUsedToken {
   type        AnalyticType
   used_count  Int
   used_amount Float
-  token       Token        @relation(fields: [tokenId], references: [id])
-  tokenId     String
+  token       Token        @relation(fields: [token_id], references: [id])
+  token_id    String
 
-  createdAt DateTime  @default(now())
-  updatedAt DateTime  @updatedAt
-  deletedAt DateTime?
+  created_at DateTime  @default(now())
+  updated_at DateTime  @updatedAt
+  deleted_at DateTime?
 }

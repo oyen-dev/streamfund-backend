@@ -39,7 +39,7 @@ export class StreamerService {
             },
           },
         ],
-        deletedAt: null,
+        deleted_at: null,
       };
 
       if (opt) {
@@ -99,7 +99,7 @@ export class StreamerService {
           id,
         },
         data: {
-          deletedAt: new Date(),
+          deleted_at: new Date(),
         },
       });
     } catch (error) {

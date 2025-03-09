@@ -7,6 +7,8 @@ export const STREAMFUND_CONTRACTS = [
     chain: baseSepolia,
     rpc: `https://base-sepolia.g.alchemy.com/v2/${process.env.ALCHEMY_API_KEY}`,
     feeCollector: '0x20047D546F34DC8A58F8DA13fa22143B4fC5404a',
+    image:
+      'https://assets.coingecko.com/coins/images/279/large/ethereum.png?1595348880',
     native: {
       symbol: 'ETH',
       decimals: 18,
@@ -22,6 +24,8 @@ export const STREAMFUND_CONTRACTS = [
     chain: arbitrumSepolia,
     rpc: `https://arb-sepolia.g.alchemy.com/v2/${process.env.ALCHEMY_API_KEY}`,
     feeCollector: '0x20047D546F34DC8A58F8DA13fa22143B4fC5404a',
+    image:
+      'https://assets.coingecko.com/coins/images/279/large/ethereum.png?1595348880',
     native: {
       symbol: 'ETH',
       decimals: 18,
@@ -37,6 +41,8 @@ export const STREAMFUND_CONTRACTS = [
     chain: optimismSepolia,
     rpc: `https://opt-sepolia.g.alchemy.com/v2/${process.env.ALCHEMY_API_KEY}`,
     feeCollector: '0x20047D546F34DC8A58F8DA13fa22143B4fC5404a',
+    image:
+      'https://assets.coingecko.com/coins/images/279/large/ethereum.png?1595348880',
     native: {
       symbol: 'ETH',
       decimals: 18,

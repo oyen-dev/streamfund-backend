@@ -50,9 +50,9 @@ describe('TokenController', () => {
         image: 'test.png',
         coin_gecko_id: 'test',
         symbol: 'test',
-        createdAt: new Date(),
-        updatedAt: new Date(),
-        deletedAt: null,
+        created_at: new Date(),
+        updated_at: new Date(),
+        deleted_at: null,
       },
       {
         id: '2',
@@ -63,9 +63,9 @@ describe('TokenController', () => {
         image: 'test.png',
         coin_gecko_id: 'test',
         symbol: 'test',
-        createdAt: new Date(),
-        updatedAt: new Date(),
-        deletedAt: null,
+        created_at: new Date(),
+        updated_at: new Date(),
+        deleted_at: null,
       },
     ];
 
