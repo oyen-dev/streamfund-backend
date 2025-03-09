@@ -1,7 +1,15 @@
-import { Controller, Get, HttpStatus, Logger, Query } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  HttpCode,
+  HttpStatus,
+  Logger,
+  Query,
+} from '@nestjs/common';
 import { TokenService } from './token.service';
 import { QueryTokenDTO } from './dto/token.dto';
 import { SuccessResponseDTO } from 'src/utils/dto';
+import { ApiOperation } from '@nestjs/swagger';
 
 @Controller('tokens')
 export class TokenController {
@@ -9,8 +17,34 @@ export class TokenController {
   private readonly logger = new Logger(TokenController.name);
 
   @Get()
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({
+    summary: 'Query tokens',
+    parameters: [
+      {
+        in: 'query',
+        name: 'limit',
+        required: true,
+      },
+      {
+        in: 'query',
+        name: 'page',
+        required: true,
+      },
+      {
+        in: 'query',
+        name: 'q',
+        required: false,
+      },
+      {
+        in: 'query',
+        name: 'chain_id',
+        required: false,
+      },
+    ],
+  })
   async query(@Query() query: QueryTokenDTO): Promise<SuccessResponseDTO> {
-    const { chain, limit, page, q } = query;
+    const { chain_id, limit, page, q } = query;
     const { count, tokens } = await this.tokenService.query(
       {
         limit,
@@ -18,9 +52,7 @@ export class TokenController {
         q,
       },
       {
-        chain: {
-          id: chain,
-        },
+        chain_id,
       },
     );
 

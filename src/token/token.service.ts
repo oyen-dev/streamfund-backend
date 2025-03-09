@@ -53,8 +53,8 @@ export class TokenService {
       }
 
       if (opt) {
-        if (opt.chain) {
-          whereQuery.chain = opt.chain;
+        if (opt.chain_id) {
+          whereQuery.chain_id = opt.chain_id;
         }
       }
 

@@ -2,7 +2,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { TokenController } from './token.controller';
 import { TokenService } from './token.service';
 import { QueryTokenDTO } from './dto/token.dto';
-import { Token } from '@prisma/client';
+import { Chain, Token } from '@prisma/client';
 
 describe('TokenController', () => {
   let controller: TokenController;
@@ -34,17 +34,27 @@ describe('TokenController', () => {
   });
 
   it('should query tokens', async () => {
+    const chain: Chain = {
+      id: 'chain-1',
+      name: 'test',
+      chain_id: 1,
+      block_explorer_url: 'test.com',
+      image: 'test.png',
+      created_at: new Date(),
+      updated_at: new Date(),
+      deleted_at: null,
+    };
     const query: QueryTokenDTO = {
       limit: 10,
       page: 1,
       q: 'test',
-      chain: 1,
+      chain_id: chain.id,
     };
     const tokens: Token[] = [
       {
         id: '1',
         address: '0x1',
-        chain: 1,
+        chain_id: chain.id,
         decimal: 18,
         name: 'test',
         image: 'test.png',
@@ -57,7 +67,7 @@ describe('TokenController', () => {
       {
         id: '2',
         address: '0x2',
-        chain: 1,
+        chain_id: chain.id,
         decimal: 18,
         name: 'test',
         image: 'test.png',

@@ -1,6 +1,6 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { TokenService } from './token.service';
-import { PrismaClient, Token } from '@prisma/client';
+import { Chain, PrismaClient, Token } from '@prisma/client';
 import { mockDeep, DeepMockProxy } from 'jest-mock-extended';
 import { PrismaService } from '../prisma.service';
 
@@ -27,17 +27,28 @@ describe('TokenService', () => {
   });
 
   it('should get token', async () => {
+    const chain: Chain = {
+      id: 'chain-1',
+      name: 'test',
+      chain_id: 1,
+      block_explorer_url: 'test.com',
+      image: 'test.png',
+      created_at: new Date(),
+      updated_at: new Date(),
+      deleted_at: null,
+    };
+
     const token: Token = {
       address: '0x123',
-      chain: 1,
+      chain_id: chain.id,
       decimal: 18,
       name: 'test',
       image: 'test.png',
       id: 'token-1',
       coin_gecko_id: 'test',
       symbol: 'test',
-      createdAt: new Date(),
-      updatedAt: new Date(),
+      created_at: new Date(),
+      updated_at: new Date(),
       deleted_at: null,
     };
     prisma.token.findFirst.mockResolvedValue(token);
@@ -56,23 +67,38 @@ describe('TokenService', () => {
   });
 
   it('should create token', async () => {
+    const chain: Chain = {
+      id: 'chain-1',
+      name: 'test',
+      chain_id: 1,
+      block_explorer_url: 'test.com',
+      image: 'test.png',
+      created_at: new Date(),
+      updated_at: new Date(),
+      deleted_at: null,
+    };
+
     const token: Token = {
       address: '0x123',
-      chain: 1,
+      chain_id: chain.id,
       decimal: 18,
       name: 'test',
       image: 'test.png',
       id: 'token-1',
       coin_gecko_id: 'test',
       symbol: 'test',
-      createdAt: new Date(),
-      updatedAt: new Date(),
+      created_at: new Date(),
+      updated_at: new Date(),
       deleted_at: null,
     };
     prisma.token.create.mockResolvedValue(token);
     const result = await service.create({
       address: '0x123',
-      chain: 1,
+      chain: {
+        connect: {
+          id: chain.id,
+        },
+      },
       decimal: 18,
       name: 'test',
       image: 'test.png',
@@ -88,7 +114,11 @@ describe('TokenService', () => {
     await expect(
       service.create({
         address: '0x123',
-        chain: 1,
+        chain: {
+          connect: {
+            id: 'chain-1',
+          },
+        },
         decimal: 18,
         name: 'test',
         image: 'test.png',
@@ -99,17 +129,27 @@ describe('TokenService', () => {
   });
 
   it('should query token', async () => {
+    const chain: Chain = {
+      id: 'chain-1',
+      name: 'test',
+      chain_id: 1,
+      block_explorer_url: 'test.com',
+      image: 'test.png',
+      created_at: new Date(),
+      updated_at: new Date(),
+      deleted_at: null,
+    };
     const token: Token = {
       address: '0x123',
-      chain: 1,
+      chain_id: chain.id,
       decimal: 18,
       name: 'test',
       image: 'test.png',
       id: 'token-1',
       coin_gecko_id: 'test',
       symbol: 'test',
-      createdAt: new Date(),
-      updatedAt: new Date(),
+      created_at: new Date(),
+      updated_at: new Date(),
       deleted_at: null,
     };
 
@@ -119,17 +159,27 @@ describe('TokenService', () => {
   });
 
   it('should query token only with specific chain id', async () => {
+    const chain: Chain = {
+      id: 'chain-1',
+      name: 'test',
+      chain_id: 1,
+      block_explorer_url: 'test.com',
+      image: 'test.png',
+      created_at: new Date(),
+      updated_at: new Date(),
+      deleted_at: null,
+    };
     const tokenB: Token = {
       address: '0x456',
-      chain: 2,
+      chain_id: chain.id,
       decimal: 18,
       name: 'test',
       image: 'test.png',
       id: 'token-2',
       coin_gecko_id: 'test',
       symbol: 'test',
-      createdAt: new Date(),
-      updatedAt: new Date(),
+      created_at: new Date(),
+      updated_at: new Date(),
       deleted_at: null,
     };
 
@@ -141,7 +191,7 @@ describe('TokenService', () => {
         q: 'test',
       },
       {
-        chain: 2,
+        chain_id: chain.id,
       },
     );
     expect(result).toEqual({ tokens: [tokenB], count: 1 });
@@ -160,17 +210,27 @@ describe('TokenService', () => {
   });
 
   it('should delete token', async () => {
+    const chain: Chain = {
+      id: 'chain-1',
+      name: 'test',
+      chain_id: 1,
+      block_explorer_url: 'test.com',
+      image: 'test.png',
+      created_at: new Date(),
+      updated_at: new Date(),
+      deleted_at: null,
+    };
     const token: Token = {
       address: '0x123',
-      chain: 1,
+      chain_id: chain.id,
       decimal: 18,
       name: 'test',
       image: 'test.png',
       id: 'token-1',
       coin_gecko_id: 'test',
       symbol: 'test',
-      createdAt: new Date(),
-      updatedAt: new Date(),
+      created_at: new Date(),
+      updated_at: new Date(),
       deleted_at: null,
     };
 
@@ -180,17 +240,27 @@ describe('TokenService', () => {
   });
 
   it('should throw an error when deleting token fails', async () => {
+    const chain: Chain = {
+      id: 'chain-1',
+      name: 'test',
+      chain_id: 1,
+      block_explorer_url: 'test.com',
+      image: 'test.png',
+      created_at: new Date(),
+      updated_at: new Date(),
+      deleted_at: null,
+    };
     const token: Token = {
       address: '0x123',
-      chain: 1,
+      chain_id: chain.id,
       decimal: 18,
       name: 'test',
       image: 'test.png',
       id: 'token-1',
       coin_gecko_id: 'test',
       symbol: 'test',
-      createdAt: new Date(),
-      updatedAt: new Date(),
+      created_at: new Date(),
+      updated_at: new Date(),
       deleted_at: null,
     };
 
@@ -200,24 +270,38 @@ describe('TokenService', () => {
   });
 
   it('should update token', async () => {
+    const chain: Chain = {
+      id: 'chain-1',
+      name: 'test',
+      chain_id: 1,
+      block_explorer_url: 'test.com',
+      image: 'test.png',
+      created_at: new Date(),
+      updated_at: new Date(),
+      deleted_at: null,
+    };
     const token: Token = {
       address: '0x123',
-      chain: 1,
+      chain_id: chain.id,
       decimal: 18,
       name: 'test',
       image: 'test.png',
       id: 'token-1',
       coin_gecko_id: 'test',
       symbol: 'test',
-      createdAt: new Date(),
-      updatedAt: new Date(),
+      created_at: new Date(),
+      updated_at: new Date(),
       deleted_at: null,
     };
 
     prisma.token.update.mockResolvedValue(token);
     const result = await service.update(token.id, {
       address: '0x123',
-      chain: 1,
+      chain: {
+        connect: {
+          id: chain.id,
+        },
+      },
       decimal: 18,
       name: 'test',
       image: 'test.png',
@@ -228,17 +312,27 @@ describe('TokenService', () => {
   });
 
   it('should throw an error when updating token fails', async () => {
+    const chain: Chain = {
+      id: 'chain-1',
+      name: 'test',
+      chain_id: 1,
+      block_explorer_url: 'test.com',
+      image: 'test.png',
+      created_at: new Date(),
+      updated_at: new Date(),
+      deleted_at: null,
+    };
     const token: Token = {
       address: '0x123',
-      chain: 1,
+      chain_id: chain.id,
       decimal: 18,
       name: 'test',
       image: 'test.png',
       id: 'token-1',
       coin_gecko_id: 'test',
       symbol: 'test',
-      createdAt: new Date(),
-      updatedAt: new Date(),
+      created_at: new Date(),
+      updated_at: new Date(),
       deleted_at: null,
     };
 
@@ -247,7 +341,11 @@ describe('TokenService', () => {
     await expect(
       service.update(token.id, {
         address: '0x123',
-        chain: 1,
+        chain: {
+          connect: {
+            id: chain.id,
+          },
+        },
         decimal: 18,
         name: 'test',
         image: 'test.png',

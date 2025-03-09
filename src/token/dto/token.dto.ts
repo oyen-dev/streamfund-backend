@@ -27,5 +27,5 @@ export class QueryTokenDTO extends BaseQueryDTO {
   })
   @IsOptional()
   @IsString()
-  chain?: string;
+  chain_id?: string;
 }

@@ -73,8 +73,8 @@ export class BaseQueryDTO {
   page: number;
 
   @ApiProperty({
-    description: 'Search query',
-    example: 'TvRL',
+    description: 'Search keyword',
+    example: 'John Doe',
     required: false,
     type: String,
   })
