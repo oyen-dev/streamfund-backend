@@ -26,8 +26,8 @@ export class SupportService {
         viewer_id,
         streamer_id,
         token_id,
-        topSupport_id,
-        topSupporter_id,
+        top_support_id,
+        top_supporter_id,
       } = payload;
       const feeShared = (usd_amount * STREAMFUND_FEES) / 10_000;
       const [support, , , , ,] = await this.prismaService.$transaction([
@@ -84,7 +84,7 @@ export class SupportService {
             },
           },
           where: {
-            id: topSupport_id,
+            id: top_support_id,
           },
         }),
         this.prismaService.topSupporter.update({
@@ -97,7 +97,7 @@ export class SupportService {
             },
           },
           where: {
-            id: topSupporter_id,
+            id: top_supporter_id,
           },
         }),
       ]);

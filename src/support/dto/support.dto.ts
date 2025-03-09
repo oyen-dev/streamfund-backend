@@ -10,8 +10,8 @@ export class CreateSupportDTO {
   streamer_id: string;
   token_id: string;
   collector_id: string;
-  topSupport_id: string;
-  topSupporter_id: string;
+  top_support_id: string;
+  top_supporter_id: string;
 }
 
 export class QuerySupportDTO extends BaseQueryDTO {

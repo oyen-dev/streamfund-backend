@@ -16,15 +16,15 @@ export class ListenerService {
         .decode(['address', 'string', 'string', 'uint8', 'string'], data)
         .toString();
 
-      const [tokenAddress, name, symbol, decimals, tokenId, uri] =
+      const [token_address, name, symbol, decimals, token_id, uri] =
         decoded.split(',');
 
       return {
-        tokenAddress,
+        token_address,
         name,
         symbol,
         decimals: Number(decimals),
-        tokenId,
+        token_id,
         uri,
       };
     } catch (error) {

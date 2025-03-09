@@ -1,7 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Token } from '@prisma/client';
-import { Transform } from 'class-transformer';
-import { IsOptional } from 'class-validator';
+import { IsOptional, IsString } from 'class-validator';
 import { BaseQueryDTO } from '../../utils/dto';
 
 export class CreateTokenDTO {
@@ -10,7 +9,7 @@ export class CreateTokenDTO {
   decimal: number;
   name: string;
   symbol: string;
-  coinGeckoId: string;
+  coin_gecko_id: string;
   image: string;
 }
 
@@ -27,6 +26,6 @@ export class QueryTokenDTO extends BaseQueryDTO {
     type: Number,
   })
   @IsOptional()
-  @Transform(({ value }: { value: string }) => parseInt(value))
-  chain?: number;
+  @IsString()
+  chain?: string;
 }

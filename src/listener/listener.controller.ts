@@ -15,8 +15,9 @@ import {
   RemoveTokenData,
   SupportReceivedData,
 } from './dto/listener.dto';
-import { FeeCollector, Token } from '@prisma/client';
+import { Chain, FeeCollector, Token } from '@prisma/client';
 import { CreateTokenDTO } from 'src/token/dto/token.dto';
+import { ChainService } from 'src/chain/chain.service';
 
 @Controller('listener')
 export class ListenerController {
@@ -30,6 +31,7 @@ export class ListenerController {
     private readonly coinGeckoService: CoingeckoService,
     private readonly topSupportService: TopSupportService,
     private readonly topSupporterService: TopSupporterService,
+    private readonly chainService: ChainService,
   ) {}
 
   private readonly logger = new Logger(ListenerController.name);
@@ -87,8 +89,8 @@ export class ListenerController {
                   const { chain, newCollector, prevCollector } = log.args;
                   void this.handleFeeCollectorChange({
                     chain: Number(chain),
-                    newCollector: newCollector as Address,
-                    prevCollector: prevCollector as Address,
+                    prev_collector: prevCollector as Address,
+                    new_collector: newCollector as Address,
                   });
                   break;
                 }
@@ -104,7 +106,7 @@ export class ListenerController {
                     decimal: Number(decimals),
                     name: decoded.name,
                     symbol: decoded.symbol,
-                    coinGeckoId: decoded.tokenId,
+                    coin_gecko_id: decoded.token_id,
                     image: decoded.uri,
                   });
                   break;
@@ -137,15 +139,38 @@ export class ListenerController {
     try {
       this.logger.log('Initializing...');
       for (const contract of STREAMFUND_CONTRACTS) {
-        const { chain, native, feeCollector } = contract;
+        const { chain, native, feeCollector, image } = contract;
+        let chainData = await this.chainService.get({
+          chain_id: chain.id,
+        });
+
+        if (chainData === null) {
+          this.logger.log(`Creating new chain ${chain.id}`);
+          chainData = await this.chainService.create({
+            chain_id: chain.id,
+            name: chain.name,
+            block_explorer_url: chain.blockExplorers.default.url,
+            image,
+          });
+          this.logger.log(`Chain ${chain.id} created successfully`);
+        } else if (chainData.deleted_at !== null) {
+          this.logger.log(`Re-adding chain ${chain.id}`);
+          chainData = await this.chainService.update(chainData.id, {
+            deleted_at: null,
+          });
+          this.logger.log(`Chain ${chain.id} re-added successfully`);
+        } else {
+          this.logger.log(`Chain ${chain.id} already exists`);
+        }
+
         const [token, collector] = await Promise.all([
           await this.tokenService.get({
-            chain: chain.id,
+            chain_id: chainData.id,
             address: native.address,
           }),
           this.feeCollectorService.get({
             address: feeCollector,
-            chain: chain.id,
+            chain_id: chainData.id,
           }),
         ]);
 
@@ -155,7 +180,11 @@ export class ListenerController {
           );
           await this.tokenService.create({
             address: native.address,
-            chain: chain.id,
+            chain: {
+              connect: {
+                id: chainData.id,
+              },
+            },
             decimal: native.decimals,
             name: native.symbol,
             symbol: native.symbol,
@@ -187,7 +216,11 @@ export class ListenerController {
           );
           await this.feeCollectorService.create({
             address: feeCollector,
-            chain: chain.id,
+            chain: {
+              connect: {
+                id: chainData.id,
+              },
+            },
             usd_total: 0,
           });
           this.logger.log(
@@ -225,6 +258,11 @@ export class ListenerController {
     hash,
   }: SupportReceivedData): Promise<void> {
     try {
+      let chainData = await this.chainService.get({
+        chain_id: chain,
+      });
+      chainData = chainData as Chain;
+
       let [
         streamerData,
         viewerData,
@@ -235,8 +273,15 @@ export class ListenerController {
       ] = await Promise.all([
         this.streamerService.get({ address: streamer, deleted_at: null }),
         this.viewerService.get({ address: from, deleted_at: null }),
-        this.tokenService.get({ address: token, chain, deleted_at: null }),
-        this.feeCollectorService.get({ chain, deleted_at: null }),
+        this.tokenService.get({
+          address: token,
+          chain_id: chainData.id,
+          deleted_at: null,
+        }),
+        this.feeCollectorService.get({
+          chain_id: chainData.id,
+          deleted_at: null,
+        }),
         this.topSupportService.get({
           streamer: {
             address: streamer,
@@ -325,8 +370,8 @@ export class ListenerController {
         viewer_id: viewerData.id,
         streamer_id: streamerData.id,
         token_id: tokenData.id,
-        topSupport_id: tstData.id,
-        topSupporter_id: tsrData.id,
+        top_support_id: tstData.id,
+        top_supporter_id: tsrData.id,
       });
 
       this.logger.log(
@@ -340,63 +385,79 @@ export class ListenerController {
 
   private async handleFeeCollectorChange({
     chain,
-    newCollector,
-    prevCollector,
+    prev_collector,
+    new_collector,
   }: FeeCollectorChangedData): Promise<void> {
     try {
-      const prevCol = await this.feeCollectorService.get({
-        address: prevCollector,
-        chain,
+      let chainData = await this.chainService.get({
+        chain_id: chain,
       });
-      const newCol = await this.feeCollectorService.get({
-        address: newCollector,
-        chain,
-      });
+      chainData = chainData as Chain;
+
+      const [prevCol, newCol] = await Promise.all([
+        this.feeCollectorService.get({
+          address: prev_collector,
+          chain: {
+            chain_id: chain,
+          },
+        }),
+        this.feeCollectorService.get({
+          address: new_collector,
+          chain: {
+            chain_id: chain,
+          },
+        }),
+      ]);
+
       if (newCol === null) {
         this.logger.log(
-          `Creating new collector account for ${newCollector} on chain ${chain}`,
+          `Creating new collector account for ${new_collector} on chain ${chain}`,
         );
         await this.feeCollectorService.create({
-          address: newCollector,
-          chain,
+          address: new_collector,
+          chain: {
+            connect: {
+              id: chainData.id,
+            },
+          },
           usd_total: 0,
         });
         this.logger.log(
-          `New collector account for ${newCollector} on chain ${chain} created successfully`,
+          `New collector account for ${new_collector} on chain ${chain} created successfully`,
         );
       } else if (newCol.deleted_at !== null) {
         this.logger.log(
-          `Re-adding collector account for ${newCollector} on chain ${chain}`,
+          `Re-adding collector account for ${new_collector} on chain ${chain}`,
         );
         await this.feeCollectorService.update(newCol.id, {
           deleted_at: null,
         });
         this.logger.log(
-          `Collector account for ${newCollector} on chain ${chain} re-added successfully`,
+          `Collector account for ${new_collector} on chain ${chain} re-added successfully`,
         );
       } else {
         this.logger.log(
-          `Collector account for ${newCollector} on chain ${chain} already exists`,
+          `Collector account for ${new_collector} on chain ${chain} already exists`,
         );
       }
 
       if (prevCol === null) {
         this.logger.log(
-          `Collector account for ${prevCollector} on chain ${chain} does not exist`,
+          `Collector account for ${prev_collector} on chain ${chain} does not exist`,
         );
         return;
       } else if (prevCol.deleted_at !== null) {
         this.logger.log(
-          `Collector account for ${prevCollector} on chain ${chain} already removed`,
+          `Collector account for ${prev_collector} on chain ${chain} already removed`,
         );
         return;
       } else {
         this.logger.log(
-          `Removing collector account for ${prevCollector} on chain ${chain}`,
+          `Removing collector account for ${prev_collector} on chain ${chain}`,
         );
         await this.feeCollectorService.delete(prevCol.id);
         this.logger.log(
-          `Collector account for ${prevCollector} on chain ${chain} removed successfully`,
+          `Collector account for ${prev_collector} on chain ${chain} removed successfully`,
         );
       }
     } catch (error) {
@@ -407,21 +468,30 @@ export class ListenerController {
 
   private async handleAddToken(payload: CreateTokenDTO): Promise<void> {
     try {
-      const { address, chain, decimal, name, symbol, coinGeckoId, image } =
+      const { address, chain, decimal, name, symbol, coin_gecko_id, image } =
         payload;
+      let chainData = await this.chainService.get({
+        chain_id: chain,
+      });
+      chainData = chainData as Chain;
+
       const token = await this.tokenService.get({
-        chain,
+        chain_id: chainData.id,
         address,
       });
       if (token === null) {
         this.logger.log(`Adding token ${symbol} on chain ${chain}`);
         await this.tokenService.create({
           address,
-          chain,
+          chain: {
+            connect: {
+              id: chainData.id,
+            },
+          },
           decimal,
           name,
           symbol,
-          coin_gecko_id: coinGeckoId,
+          coin_gecko_id,
           image,
         });
         this.logger.log(`Token ${symbol} on chain ${chain} added successfully`);
@@ -438,7 +508,7 @@ export class ListenerController {
           `Token ${symbol} on chain ${chain} already exists, updating token`,
         );
         await this.tokenService.update(token.id, {
-          createdAt: new Date(),
+          created_at: new Date(),
         });
       }
     } catch (error) {
@@ -452,7 +522,15 @@ export class ListenerController {
     chain,
   }: RemoveTokenData): Promise<void> {
     try {
-      const token = await this.tokenService.get({ address, chain });
+      let chainData = await this.chainService.get({
+        chain_id: chain,
+      });
+      chainData = chainData as Chain;
+
+      const token = await this.tokenService.get({
+        address,
+        chain_id: chainData.id,
+      });
       if (token === null) {
         this.logger.log(`Token ${address} on chain ${chain} does not exist`);
         return;

@@ -1,9 +1,9 @@
 export class DecodedAddTokenEventData {
-  tokenAddress: string;
+  token_address: string;
   name: string;
   symbol: string;
   decimals: number;
-  tokenId: string;
+  token_id: string;
   uri: string;
 }
 
@@ -14,8 +14,8 @@ export class DecodedSupportReceivedEventData {
 
 export class FeeCollectorChangedData {
   chain: number;
-  newCollector: string;
-  prevCollector: string;
+  new_collector: string;
+  prev_collector: string;
 }
 
 export class SupportReceivedData {

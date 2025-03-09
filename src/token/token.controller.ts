@@ -18,7 +18,9 @@ export class TokenController {
         q,
       },
       {
-        chain,
+        chain: {
+          id: chain,
+        },
       },
     );
 

@@ -9,6 +9,7 @@ import { ListenerModule } from './listener/listener.module';
 import { FeeCollectorModule } from './feecollector/feecollector.module';
 import { CoingeckoModule } from './coingecko/coingecko.module';
 import { TopModule } from './top/top.module';
+import { ChainModule } from './chain/chain.module';
 
 @Module({
   imports: [
@@ -20,6 +21,7 @@ import { TopModule } from './top/top.module';
     FeeCollectorModule,
     CoingeckoModule,
     TopModule,
+    ChainModule,
   ],
   controllers: [AppController],
   providers: [AppService],

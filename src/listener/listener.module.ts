@@ -9,6 +9,7 @@ import { CoingeckoModule } from 'src/coingecko/coingecko.module';
 import { TopSupportService } from 'src/top/topsupport.service';
 import { TopSupporterService } from 'src/top/topsupporter.service';
 import { ListenerController } from './listener.controller';
+import { ChainService } from 'src/chain/chain.service';
 
 @Module({
   providers: [
@@ -20,6 +21,7 @@ import { ListenerController } from './listener.controller';
     SupportService,
     TopSupportService,
     TopSupporterService,
+    ChainService,
   ],
   exports: [ListenerService],
   imports: [CoingeckoModule],

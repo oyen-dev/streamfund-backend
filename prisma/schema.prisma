@@ -58,17 +58,17 @@ model Configuration {
 }
 
 model Chain {
-  id                 String  @id @default(cuid())
+  id                 String         @id @default(cuid())
   name               String
   chain_id           Int
   block_explorer_url String
   image              String
   token              Token[]
+  FeeCollector       FeeCollector[]
 
-  created_at   DateTime       @default(now())
-  updated_at   DateTime       @updatedAt
-  deleted_at   DateTime?
-  FeeCollector FeeCollector[]
+  created_at DateTime  @default(now())
+  updated_at DateTime  @updatedAt
+  deleted_at DateTime?
 }
 
 model Token {
