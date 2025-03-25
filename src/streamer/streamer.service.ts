@@ -2,14 +2,20 @@ import { Injectable, Logger } from '@nestjs/common';
 import { Prisma, Streamer } from '@prisma/client';
 import { PrismaService } from '../prisma.service';
 import { generateCustomId } from '../utils/utils';
-import { QueryStreamerDTO, QueryStreamerResultDTO } from './dto/streamer.dto';
+import {
+  GetStreamerResultDTO,
+  QueryStreamerDTO,
+  QueryStreamerResultDTO,
+} from './dto/streamer.dto';
 
 @Injectable()
 export class StreamerService {
   constructor(private readonly prismaService: PrismaService) {}
   private readonly logger = new Logger(StreamerService.name);
 
-  async get(payload: Prisma.StreamerWhereInput): Promise<Streamer | null> {
+  async get(
+    payload: Prisma.StreamerWhereInput,
+  ): Promise<GetStreamerResultDTO | null> {
     try {
       return await this.prismaService.streamer.findFirst({
         where: payload,
@@ -78,12 +84,18 @@ export class StreamerService {
     }
   }
 
-  async create(paylod: Prisma.StreamerCreateInput): Promise<Streamer> {
+  async create(
+    paylod: Prisma.StreamerCreateInput,
+  ): Promise<GetStreamerResultDTO> {
     try {
       return await this.prismaService.streamer.create({
         data: {
           ...paylod,
           id: generateCustomId('str'),
+        },
+        include: {
+          bio: true,
+          configuration: true,
         },
       });
     } catch (error) {

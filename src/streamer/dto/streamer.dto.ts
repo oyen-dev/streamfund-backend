@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { Streamer } from '@prisma/client';
+import { Prisma, Streamer } from '@prisma/client';
 import { IsOptional, IsString } from 'class-validator';
 import { BaseQueryDTO } from 'src/utils/dto';
 
@@ -19,3 +19,10 @@ export class QueryStreamerDTO extends BaseQueryDTO {
   @IsString()
   username?: string;
 }
+
+export type GetStreamerResultDTO = Prisma.StreamerGetPayload<{
+  include: {
+    bio: true;
+    configuration: true;
+  };
+}>;

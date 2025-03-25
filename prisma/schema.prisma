@@ -91,7 +91,7 @@ model Token {
 
 model Viewer {
   id                        String                    @id @default(cuid())
-  address                   String
+  address                   String                    @unique
   usd_total_support         Float
   bio                       Bio?
   support                   Support[]

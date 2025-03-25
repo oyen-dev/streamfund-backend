@@ -21,7 +21,7 @@ export class QueryTokenResultDTO {
 export class QueryTokenDTO extends BaseQueryDTO {
   @ApiProperty({
     description: 'Chain ID',
-    example: 'TvRL',
+    example: '1',
     required: false,
     type: Number,
   })
