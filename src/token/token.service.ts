@@ -63,6 +63,9 @@ export class TokenService {
           where: whereQuery,
           take: limit,
           skip: (page - 1) * limit,
+          include: {
+            chain: true,
+          },
           orderBy: {
             name: 'asc',
           },

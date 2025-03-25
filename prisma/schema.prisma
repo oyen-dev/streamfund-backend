@@ -64,7 +64,7 @@ model Chain {
   block_explorer_url String
   image              String
   token              Token[]
-  FeeCollector       FeeCollector[]
+  collector          FeeCollector[]
 
   created_at DateTime  @default(now())
   updated_at DateTime  @updatedAt

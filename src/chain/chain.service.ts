@@ -52,6 +52,9 @@ export class ChainService {
           where: whereQuery,
           take: limit,
           skip: (page - 1) * limit,
+          include: {
+            collector: true,
+          },
           orderBy: {
             name: 'asc',
           },
