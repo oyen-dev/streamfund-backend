@@ -83,6 +83,7 @@
       "\\.module\\.ts",
       "\\.dto\\.ts",
       "src/main.ts",
+      "src/prisma.service.ts",
       "\\.mock\\.ts",
       "\\.(e2e-)?spec\\.ts",
       "coverage",

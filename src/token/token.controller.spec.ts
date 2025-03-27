@@ -85,7 +85,18 @@ describe('TokenController', () => {
     });
 
     const result = await controller.query(query);
-    expect(result.data?.tokens).toEqual(tokens);
-    expect(result.metadata?.total).toEqual(tokens.length);
+    expect(result).toEqual({
+      success: true,
+      message: 'Token queried successfully',
+      metadata: {
+        page: query.page,
+        limit: query.limit,
+        total: tokens.length,
+      },
+      data: {
+        tokens,
+      },
+      status_code: 200,
+    });
   });
 });

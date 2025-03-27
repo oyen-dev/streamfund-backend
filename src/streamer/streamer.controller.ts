@@ -68,7 +68,7 @@ export class StreamerController {
       },
     },
   })
-  async getStreamer(@Param('id') id: string): Promise<SuccessResponseDTO> {
+  async get(@Param('id') id: string): Promise<SuccessResponseDTO> {
     const streamer = await this.streamerService.get({
       OR: [
         {

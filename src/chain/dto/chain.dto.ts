@@ -1,5 +1,5 @@
 import { Chain } from '@prisma/client';
-import { BaseQueryDTO } from 'src/utils/dto';
+import { BaseQueryDTO } from '../../utils/dto';
 
 export class QueryChainDTO extends BaseQueryDTO {}
 
