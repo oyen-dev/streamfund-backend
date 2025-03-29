@@ -31,15 +31,4 @@ export class CoingeckoService {
 
     return data[coin_id]?.usd || -1;
   }
-
-  async getCoinPriceWithRetry(coin_id: string, retry = 3): Promise<number> {
-    let price = -1;
-    for (let i = 0; i < retry; i++) {
-      price = await this.getCoinPrice(coin_id);
-      if (price !== -1) {
-        break;
-      }
-    }
-    return price;
-  }
 }

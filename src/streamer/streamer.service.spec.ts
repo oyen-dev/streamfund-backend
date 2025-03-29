@@ -1,6 +1,6 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { StreamerService } from './streamer.service';
-import { PrismaService } from '../prisma.service';
+import { PrismaService } from 'src/prisma.service';
 import { DeepMockProxy, mockDeep } from 'jest-mock-extended';
 import { Streamer } from '@prisma/client';
 

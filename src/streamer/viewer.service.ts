@@ -1,7 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { Prisma, Viewer } from '@prisma/client';
-import { PrismaService } from '../prisma.service';
-import { generateCustomId } from '../utils/utils';
+import { PrismaService } from 'src/prisma.service';
+import { generateCustomId } from 'src/utils/utils';
 
 @Injectable()
 export class ViewerService {

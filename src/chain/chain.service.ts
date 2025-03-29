@@ -1,8 +1,8 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { Chain, Prisma } from '@prisma/client';
-import { PrismaService } from '../prisma.service';
+import { PrismaService } from 'src/prisma.service';
 import { QueryChainDTO, QueryChainResultDTO } from './dto/chain.dto';
-import { generateCustomId } from '../utils/utils';
+import { generateCustomId } from 'src/utils/utils';
 
 @Injectable()
 export class ChainService {

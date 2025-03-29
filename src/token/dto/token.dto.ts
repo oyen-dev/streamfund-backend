@@ -1,7 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Token } from '@prisma/client';
 import { IsOptional, IsString } from 'class-validator';
-import { BaseQueryDTO } from '../../utils/dto';
+import { BaseQueryDTO } from 'src/utils/dto';
 
 export class CreateTokenDTO {
   address: string;

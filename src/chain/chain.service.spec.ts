@@ -1,6 +1,6 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { ChainService } from './chain.service';
-import { PrismaService } from '../prisma.service';
+import { PrismaService } from 'src/prisma.service';
 import { Logger } from '@nestjs/common';
 import { QueryChainDTO } from './dto/chain.dto';
 import { Chain } from '@prisma/client';
