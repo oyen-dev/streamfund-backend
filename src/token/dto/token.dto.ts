@@ -13,6 +13,10 @@ export class CreateTokenDTO {
   image: string;
 }
 
+export interface TokenWithPrice extends Token {
+  price: number;
+}
+
 export class QueryTokenResultDTO {
   tokens: Token[];
   count: number;

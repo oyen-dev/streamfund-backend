@@ -7,8 +7,7 @@ export const STREAMFUND_CONTRACTS = [
     chain: baseSepolia,
     rpc: `https://base-sepolia.g.alchemy.com/v2/${process.env.ALCHEMY_API_KEY}`,
     feeCollector: '0x5E4194B0A83Ee2f21D67D5c4bF73CFcfCFc5AF61',
-    image:
-      'https://assets.coingecko.com/coins/images/279/large/ethereum.png?1595348880',
+    image: 'http://localhost:4000/api/v1/files/base.png',
     native: {
       symbol: 'ETH',
       decimals: 18,
@@ -24,8 +23,7 @@ export const STREAMFUND_CONTRACTS = [
     chain: arbitrumSepolia,
     rpc: `https://arb-sepolia.g.alchemy.com/v2/${process.env.ALCHEMY_API_KEY}`,
     feeCollector: '0x5E4194B0A83Ee2f21D67D5c4bF73CFcfCFc5AF61',
-    image:
-      'https://assets.coingecko.com/coins/images/279/large/ethereum.png?1595348880',
+    image: 'http://localhost:4000/api/v1/files/arbitrum.png',
     native: {
       symbol: 'ETH',
       decimals: 18,
@@ -41,8 +39,7 @@ export const STREAMFUND_CONTRACTS = [
     chain: optimismSepolia,
     rpc: `https://opt-sepolia.g.alchemy.com/v2/${process.env.ALCHEMY_API_KEY}`,
     feeCollector: '0x5E4194B0A83Ee2f21D67D5c4bF73CFcfCFc5AF61',
-    image:
-      'https://assets.coingecko.com/coins/images/279/large/ethereum.png?1595348880',
+    image: 'http://localhost:4000/api/v1/files/optimism.png',
     native: {
       symbol: 'ETH',
       decimals: 18,

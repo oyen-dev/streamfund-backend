@@ -1,12 +1,16 @@
 import { Controller, Get, HttpCode, HttpStatus, Query } from '@nestjs/common';
 import { TokenService } from './token.service';
-import { QueryTokenDTO } from './dto/token.dto';
+import { QueryTokenDTO, TokenWithPrice } from './dto/token.dto';
 import { SuccessResponseDTO } from 'src/utils/dto';
 import { ApiOperation, ApiResponse } from '@nestjs/swagger';
+import { CoingeckoService } from 'src/coingecko/coingecko.service';
 
 @Controller('tokens')
 export class TokenController {
-  constructor(private readonly tokenService: TokenService) {}
+  constructor(
+    private readonly tokenService: TokenService,
+    private readonly coingeckoService: CoingeckoService,
+  ) {}
 
   @Get()
   @HttpCode(HttpStatus.OK)
@@ -73,7 +77,7 @@ export class TokenController {
   })
   async query(@Query() query: QueryTokenDTO): Promise<SuccessResponseDTO> {
     const { chain_id, limit, page, q } = query;
-    const { count, tokens } = await this.tokenService.query(
+    const { count, tokens: tempTokens } = await this.tokenService.query(
       {
         limit,
         page,
@@ -82,6 +86,18 @@ export class TokenController {
       {
         chain_id,
       },
+    );
+
+    const tokens: TokenWithPrice[] = await Promise.all(
+      tempTokens.map(async (token) => {
+        const price = await this.coingeckoService.getCoinPrice(
+          token.coin_gecko_id,
+        );
+        return {
+          ...token,
+          price,
+        };
+      }),
     );
 
     return {
