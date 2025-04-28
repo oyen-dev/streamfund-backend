@@ -1,0 +1,15 @@
+services:
+  streamfund-backend:
+    image: streamfund/backend:0.0.1
+    container_name: streamfund-backend
+    restart: always
+    env_file:
+      - .env
+    ports:
+      - '4000:4000'
+    volumes:
+      - streamfund-backend:/app
+
+volumes:
+  streamfund-backend:
+    name: streamfund-backend
