@@ -69,4 +69,4 @@ EXPOSE 4000
 USER node
 
 # Start the server
-CMD ["node", "dist/src/main.js"]
+CMD ["node", "dist/main.js"]

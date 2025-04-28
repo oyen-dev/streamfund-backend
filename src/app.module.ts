@@ -11,6 +11,7 @@ import { CoingeckoModule } from './coingecko/coingecko.module';
 import { TopModule } from './top/top.module';
 import { ChainModule } from './chain/chain.module';
 import { FilesModule } from './files/files.module';
+import { AuthModule } from './auth/auth.module';
 
 @Module({
   imports: [
@@ -24,6 +25,7 @@ import { FilesModule } from './files/files.module';
     TopModule,
     ChainModule,
     FilesModule,
+    AuthModule,
   ],
   controllers: [AppController],
   providers: [AppService],
