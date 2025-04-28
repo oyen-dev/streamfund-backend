@@ -12,7 +12,7 @@ export const STREAMFUND_CONTRACTS = [
     chain: baseSepolia,
     rpc: `https://base-sepolia.g.alchemy.com/v2/${process.env.ALCHEMY_API_KEY}`,
     feeCollector: '0x5E4194B0A83Ee2f21D67D5c4bF73CFcfCFc5AF61',
-    image: 'http://localhost:4000/api/v1/files/base.png',
+    image: `${process.env.HOST_URL}/api/v1/files/assets/base.png`,
     native: {
       symbol: 'ETH',
       decimals: 18,
@@ -28,7 +28,7 @@ export const STREAMFUND_CONTRACTS = [
     chain: arbitrumSepolia,
     rpc: `https://arb-sepolia.g.alchemy.com/v2/${process.env.ALCHEMY_API_KEY}`,
     feeCollector: '0x5E4194B0A83Ee2f21D67D5c4bF73CFcfCFc5AF61',
-    image: 'http://localhost:4000/api/v1/files/arbitrum.png',
+    image: `${process.env.HOST_URL}/api/v1/files/assets/arbitrum.png`,
     native: {
       symbol: 'ETH',
       decimals: 18,
@@ -44,7 +44,7 @@ export const STREAMFUND_CONTRACTS = [
     chain: optimismSepolia,
     rpc: `https://opt-sepolia.g.alchemy.com/v2/${process.env.ALCHEMY_API_KEY}`,
     feeCollector: '0x5E4194B0A83Ee2f21D67D5c4bF73CFcfCFc5AF61',
-    image: 'http://localhost:4000/api/v1/files/optimism.png',
+    image: `${process.env.HOST_URL}/api/v1/files/assets/optimism.png`,
     native: {
       symbol: 'ETH',
       decimals: 18,
@@ -57,11 +57,10 @@ export const STREAMFUND_CONTRACTS = [
   {
     index: 3,
     contract: '0x11fEB7694e03420032caEeEE4e508d1Ed3983166',
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
     chain: { ...eduChainTestnet, sourceId: 656476 },
     rpc: `https://open-campus-codex-sepolia.drpc.org`,
     feeCollector: '0x5E4194B0A83Ee2f21D67D5c4bF73CFcfCFc5AF61',
-    image: 'http://localhost:4000/api/v1/files/educhain.png',
+    image: `${process.env.HOST_URL}/api/v1/files/assets/educhain.png`,
     native: {
       symbol: 'EDU',
       decimals: 18,

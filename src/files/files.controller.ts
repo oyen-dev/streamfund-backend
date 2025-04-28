@@ -7,9 +7,18 @@ import * as fs from 'fs';
 
 @Controller('files')
 export class FilesController {
-  @Get(':id')
-  getFile(@Param('id') id: string, @Res() res: Response) {
-    const allowedPath = join(process.cwd(), 'src', 'files', 'public');
+  @Get('/:directory/:id')
+  getFile(
+    @Param('directory') directory: string,
+    @Param('id') id: string,
+    @Res() res: Response,
+  ) {
+    // Only allow 'assets' or 'docs' directories
+    if (!['assets', 'docs'].includes(directory)) {
+      throw new NotFoundException('Invalid directory');
+    }
+
+    const allowedPath = join(process.cwd(), 'src', 'public', directory);
     const path = join(allowedPath, id);
 
     // Ensure the path is within the allowed directory and does not contain '..'
