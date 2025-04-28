@@ -11,7 +11,7 @@ import { CacheModule } from '@nestjs/cache-manager';
     }),
     CacheModule.register({
       isGlobal: true,
-      ttl: 60 * 1000, // 1 minute in milliseconds
+      ttl: 2 * 60 * 1000, // 2 minute in milliseconds
     }),
   ],
   providers: [CoingeckoService],

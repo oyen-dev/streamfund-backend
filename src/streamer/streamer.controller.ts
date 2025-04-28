@@ -1,17 +1,20 @@
 import {
+  Body,
   Controller,
   Get,
   HttpCode,
   HttpStatus,
   NotFoundException,
   Param,
+  Post,
 } from '@nestjs/common';
 import { StreamerService } from './streamer.service';
 import { ApiOperation, ApiResponse } from '@nestjs/swagger';
 import { SuccessResponseDTO } from 'src/utils/dto';
-import { GetStreamerResultDTO } from './dto/streamer.dto';
+import { GetStreamerResultDTO, RegisterAsStreamer } from './dto/streamer.dto';
+import { generateCustomId } from 'src/utils/utils';
 
-@Controller('streamer')
+@Controller('streamers')
 export class StreamerController {
   constructor(private readonly streamerService: StreamerService) {}
 
@@ -96,6 +99,49 @@ export class StreamerController {
       message: 'Streamer fetched successfully',
       data: {
         streamer: satisfiedStreamer,
+      },
+      status_code: HttpStatus.OK,
+    };
+  }
+
+  @Post('register')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({
+    summary: 'Register as a streamer',
+    description:
+      'This endpoint is used to register as a streamer. The wallet address is required.',
+  })
+  async register(
+    @Body() payload: RegisterAsStreamer,
+  ): Promise<SuccessResponseDTO> {
+    console.log('payload', payload);
+    const streamer = await this.streamerService.create({
+      address: payload.wallet_address,
+      usd_total_support: 0,
+      bio: {
+        create: {
+          id: generateCustomId('bio'),
+          username: payload.username,
+          viewer: {
+            create: {
+              id: generateCustomId('vwr'),
+              address: payload.wallet_address,
+              usd_total_support: 0,
+            },
+          },
+        },
+      },
+    });
+
+    if (!streamer) {
+      throw new NotFoundException('Streamer not found');
+    }
+
+    return {
+      success: true,
+      message: 'Streamer registered successfully',
+      data: {
+        streamer,
       },
       status_code: HttpStatus.OK,
     };

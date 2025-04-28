@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-unsafe-member-access */
+/* eslint-disable @typescript-eslint/no-unsafe-assignment */
 import { Controller, Logger } from '@nestjs/common';
 import { ListenerService } from './listener.service';
 import { TokenService } from 'src/token/token.service';
@@ -74,7 +76,7 @@ export class ListenerController {
                     log.args;
 
                   void this.handleSupportReceived({
-                    amount: Number(amount),
+                    amount: amount!,
                     chain: Number(chain),
                     from: from as Address,
                     streamer: streamer as Address,
@@ -356,7 +358,7 @@ export class ListenerController {
       const tokenPrice = await this.coinGeckoService.getCoinPrice(
         tokenData.coin_gecko_id,
       );
-      const usdAmount = (amount / 10 ** tokenData.decimal) * tokenPrice;
+      const usdAmount = (Number(amount) / 10 ** tokenData.decimal) * tokenPrice;
       const { message, username } =
         this.listenerService.decodeSupportReceivedEventData(
           data as `0x${string}`,

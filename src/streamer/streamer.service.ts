@@ -92,6 +92,7 @@ export class StreamerService {
         data: {
           ...paylod,
           id: generateCustomId('str'),
+          stream_key: generateCustomId('SK'),
         },
         include: {
           bio: true,

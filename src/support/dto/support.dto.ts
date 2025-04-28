@@ -3,7 +3,7 @@ import { BaseQueryDTO } from 'src/utils/dto';
 
 export class CreateSupportDTO {
   usd_amount: number;
-  token_amount: number;
+  token_amount: bigint;
   hash: string;
   data: string;
   viewer_id: string;

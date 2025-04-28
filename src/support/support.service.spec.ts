@@ -67,7 +67,7 @@ describe('SupportService', () => {
       data: 'test data',
       hash: 'test hash',
       usd_amount: 100,
-      token_amount: 50,
+      token_amount: BigInt(50),
       collector_id: 'collector1',
       viewer_id: 'viewer1',
       streamer_id: 'streamer1',

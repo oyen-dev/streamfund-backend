@@ -1,4 +1,9 @@
-import { baseSepolia, arbitrumSepolia, optimismSepolia } from 'viem/chains';
+import {
+  baseSepolia,
+  arbitrumSepolia,
+  optimismSepolia,
+  eduChainTestnet,
+} from 'viem/chains';
 
 export const STREAMFUND_CONTRACTS = [
   {
@@ -47,6 +52,23 @@ export const STREAMFUND_CONTRACTS = [
       coinGeckoId: 'ethereum',
       image:
         'https://assets.coingecko.com/coins/images/279/large/ethereum.png?1595348880',
+    },
+  },
+  {
+    index: 3,
+    contract: '0x11fEB7694e03420032caEeEE4e508d1Ed3983166',
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+    chain: { ...eduChainTestnet, sourceId: 656476 },
+    rpc: `https://open-campus-codex-sepolia.drpc.org`,
+    feeCollector: '0x5E4194B0A83Ee2f21D67D5c4bF73CFcfCFc5AF61',
+    image: 'http://localhost:4000/api/v1/files/educhain.png',
+    native: {
+      symbol: 'EDU',
+      decimals: 18,
+      address: '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE',
+      coinGeckoId: 'edu-coin',
+      image:
+        'https://coin-images.coingecko.com/coins/images/29948/large/EDU_Logo.png?1696528874',
     },
   },
 ];

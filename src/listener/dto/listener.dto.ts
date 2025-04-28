@@ -19,7 +19,7 @@ export class FeeCollectorChangedData {
 }
 
 export class SupportReceivedData {
-  amount: number;
+  amount: bigint;
   chain: number;
   from: string;
   streamer: string;

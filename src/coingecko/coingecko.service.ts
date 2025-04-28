@@ -37,10 +37,10 @@ export class CoingeckoService {
         ),
     );
 
-    if (data[coin_id]?.usd) {
+    if (data[coin_id].usd) {
       await this.cacheManager.set(coin_id, data[coin_id].usd);
     }
 
-    return data[coin_id]?.usd || -1;
+    return data[coin_id].usd;
   }
 }

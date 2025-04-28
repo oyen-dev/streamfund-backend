@@ -3,6 +3,7 @@ import { TokenController } from './token.controller';
 import { TokenService } from './token.service';
 import { QueryTokenDTO } from './dto/token.dto';
 import { Chain, Token } from '@prisma/client';
+import { CoingeckoService } from 'src/coingecko/coingecko.service';
 
 describe('TokenController', () => {
   let controller: TokenController;
@@ -16,6 +17,12 @@ describe('TokenController', () => {
           provide: TokenService,
           useValue: {
             query: jest.fn(),
+          },
+        },
+        {
+          provide: CoingeckoService,
+          useValue: {
+            getCoinPrice: jest.fn(),
           },
         },
       ],
