@@ -1,14 +1,14 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { Prisma, Streamer } from '@prisma/client';
+import { Prisma, User } from '@prisma/client';
 import { IsOptional, IsString } from 'class-validator';
 import { BaseQueryDTO } from 'src/utils/dto';
 
-export class QueryStreamerResultDTO {
-  streamers: Streamer[];
+export class QueryUserResultDTO {
+  users: User[];
   count: number;
 }
 
-export class QueryStreamerDTO extends BaseQueryDTO {
+export class QueryUserDTO extends BaseQueryDTO {
   @ApiProperty({
     description: 'Username',
     example: 'meoww',
@@ -20,7 +20,7 @@ export class QueryStreamerDTO extends BaseQueryDTO {
   username?: string;
 }
 
-export class RegisterAsStreamer {
+export class RegisterDTO {
   @ApiProperty({
     description: 'Wallet address',
     example: '0x74Bf296288eB66F6837536b579945481841a171C',
@@ -40,7 +40,7 @@ export class RegisterAsStreamer {
   username: string;
 }
 
-export type GetStreamerResultDTO = Prisma.StreamerGetPayload<{
+export type GetUserResultDTO = Prisma.UserGetPayload<{
   include: {
     bio: true;
     configuration: true;

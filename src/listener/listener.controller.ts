@@ -3,9 +3,9 @@
 import { Controller, Logger } from '@nestjs/common';
 import { ListenerService } from './listener.service';
 import { TokenService } from 'src/token/token.service';
-import { StreamerService } from 'src/streamer/streamer.service';
+import { StreamerService } from 'src/user/user.service';
 import { FeeCollectorService } from 'src/feecollector/feecollector.service';
-import { ViewerService } from 'src/streamer/viewer.service';
+import { ViewerService } from 'src/user/viewer.service';
 import { SupportService } from 'src/support/support.service';
 import { CoingeckoService } from 'src/coingecko/coingecko.service';
 import { TopSupportService } from 'src/top/topsupport.service';

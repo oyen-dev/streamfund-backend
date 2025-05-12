@@ -8,32 +8,32 @@ import {
   Param,
   Post,
 } from '@nestjs/common';
-import { StreamerService } from './streamer.service';
+import { UserService } from './user.service';
 import { ApiOperation, ApiResponse } from '@nestjs/swagger';
 import { SuccessResponseDTO } from 'src/utils/dto';
-import { GetStreamerResultDTO, RegisterAsStreamer } from './dto/streamer.dto';
+import { GetUserResultDTO, RegisterDTO } from './dto/user.dto';
 import { generateCustomId } from 'src/utils/utils';
 
-@Controller('streamers')
-export class StreamerController {
-  constructor(private readonly streamerService: StreamerService) {}
+@Controller('users')
+export class UserController {
+  constructor(private readonly userService: UserService) {}
 
   @Get(':id')
   @HttpCode(HttpStatus.OK)
   @ApiOperation({
-    summary: 'Get streamer information',
+    summary: 'Get user information',
     description:
-      'This endpoint is used to get streamer information based on the streamer username or wallet address.',
+      'This endpoint is used to get user information based on the user username or wallet address.',
   })
   @ApiResponse({
     status: HttpStatus.OK,
-    description: 'Streamer fetched successfully',
+    description: 'User fetched successfully',
     schema: {
       example: {
         success: true,
-        message: 'Streamer fetched successfully',
+        message: 'User fetched successfully',
         data: {
-          streamer: {
+          user: {
             id: 'str-h54tqx0hgv7lxb7vneutg9xm4',
             address: '0x74Bf296288eB66F6837536b579945481841a171C',
             usd_total_support: 12.17855,
@@ -62,17 +62,17 @@ export class StreamerController {
   })
   @ApiResponse({
     status: HttpStatus.NOT_FOUND,
-    description: 'Streamer not found',
+    description: 'User not found',
     schema: {
       example: {
-        message: 'Streamer not found',
+        message: 'User not found',
         error: 'Not Found',
         statusCode: 404,
       },
     },
   })
   async get(@Param('id') id: string): Promise<SuccessResponseDTO> {
-    const streamer = await this.streamerService.get({
+    const user = await this.userService.get({
       OR: [
         {
           address: id,
@@ -86,19 +86,19 @@ export class StreamerController {
       deleted_at: null,
     });
 
-    if (!streamer) {
-      throw new NotFoundException('Streamer not found');
+    if (!user) {
+      throw new NotFoundException('User not found');
     }
 
-    const satisfiedStreamer: Partial<GetStreamerResultDTO> = streamer;
-    delete satisfiedStreamer.stream_key;
-    delete satisfiedStreamer?.configuration;
+    const satisfiedUser: Partial<GetUserResultDTO> = user;
+    delete satisfiedUser.stream_key;
+    delete satisfiedUser?.configuration;
 
     return {
       success: true,
-      message: 'Streamer fetched successfully',
+      message: 'User fetched successfully',
       data: {
-        streamer: satisfiedStreamer,
+        user: satisfiedUser,
       },
       status_code: HttpStatus.OK,
     };
@@ -107,41 +107,30 @@ export class StreamerController {
   @Post('register')
   @HttpCode(HttpStatus.OK)
   @ApiOperation({
-    summary: 'Register as a streamer',
+    summary: 'Register as a user',
     description:
-      'This endpoint is used to register as a streamer. The wallet address is required.',
+      'This endpoint is used to register as a user. The wallet address is required.',
   })
-  async register(
-    @Body() payload: RegisterAsStreamer,
-  ): Promise<SuccessResponseDTO> {
-    console.log('payload', payload);
-    const streamer = await this.streamerService.create({
+  async register(@Body() payload: RegisterDTO): Promise<SuccessResponseDTO> {
+    const user = await this.userService.create({
       address: payload.wallet_address,
-      usd_total_support: 0,
       bio: {
         create: {
           id: generateCustomId('bio'),
           username: payload.username,
-          viewer: {
-            create: {
-              id: generateCustomId('vwr'),
-              address: payload.wallet_address,
-              usd_total_support: 0,
-            },
-          },
         },
       },
     });
 
-    if (!streamer) {
-      throw new NotFoundException('Streamer not found');
+    if (!user) {
+      throw new NotFoundException('User not found');
     }
 
     return {
       success: true,
-      message: 'Streamer registered successfully',
+      message: 'User registered successfully',
       data: {
-        streamer,
+        user,
       },
       status_code: HttpStatus.OK,
     };

@@ -1,22 +1,22 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { StreamerService } from './streamer.service';
+import { UserService } from './user.service';
 import { PrismaService } from 'src/prisma.service';
 import { DeepMockProxy, mockDeep } from 'jest-mock-extended';
-import { Streamer } from '@prisma/client';
+import { User } from '@prisma/client';
 
-describe('StreamerService', () => {
-  let service: StreamerService;
+describe('UserService', () => {
+  let service: UserService;
   let prisma: DeepMockProxy<PrismaService>;
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
-      providers: [StreamerService, PrismaService],
+      providers: [UserService, PrismaService],
     })
       .overrideProvider(PrismaService)
       .useValue(mockDeep<PrismaService>())
       .compile();
 
-    service = module.get<StreamerService>(StreamerService);
+    service = module.get<UserService>(UserService);
     prisma = module.get<PrismaService>(
       PrismaService,
     ) as unknown as DeepMockProxy<PrismaService>;
@@ -27,32 +27,31 @@ describe('StreamerService', () => {
   });
 
   describe('get', () => {
-    it('should get a streamer by address', async () => {
-      const streamer = {
+    it('should get a user by address', async () => {
+      const user: User = {
         id: '1',
         address: '0x123',
         stream_key: 'key123',
-        usd_total_support: 100,
         created_at: new Date(),
         updated_at: new Date(),
         deleted_at: null,
-        bio: null,
-        configuration: null,
+        usd_total_given: 0,
+        usd_total_receive: 0,
       };
 
-      prisma.streamer.findFirst.mockResolvedValue(streamer);
+      prisma.user.findFirst.mockResolvedValue(user);
       const result = await service.get({ address: '0x123' });
-      expect(result).toEqual(streamer);
+      expect(result).toEqual(user);
     });
 
-    it('should return null when streamer not found', async () => {
-      prisma.streamer.findFirst.mockResolvedValue(null);
+    it('should return null when user not found', async () => {
+      prisma.user.findFirst.mockResolvedValue(null);
       const result = await service.get({ address: 'nonexistent' });
       expect(result).toBeNull();
     });
 
     it('should throw error when query fails', async () => {
-      prisma.streamer.findFirst.mockRejectedValue(new Error('Query failed'));
+      prisma.user.findFirst.mockRejectedValue(new Error('Query failed'));
       await expect(service.get({ address: '0x123' })).rejects.toThrow(
         'Query failed',
       );
@@ -60,49 +59,47 @@ describe('StreamerService', () => {
   });
 
   describe('query', () => {
-    it('should query streamers with pagination', async () => {
-      const streamers = [
+    it('should query users with pagination', async () => {
+      const users: User[] = [
         {
           id: '1',
           address: '0x123',
           stream_key: 'key123',
-          usd_total_support: 100,
           created_at: new Date(),
           updated_at: new Date(),
           deleted_at: null,
-          bio: null,
-          configuration: null,
+          usd_total_given: 0,
+          usd_total_receive: 0,
         },
       ];
 
-      prisma.$transaction.mockResolvedValue([streamers, 1]);
+      prisma.$transaction.mockResolvedValue([users, 1]);
 
       const result = await service.query({ limit: 10, page: 1, q: '' });
-      expect(result).toEqual({ streamers, count: 1 });
+      expect(result).toEqual({ users, count: 1 });
     });
 
-    it('should query streamers with bio username filter', async () => {
-      const streamers = [
+    it('should query user with bio username filter', async () => {
+      const users: User[] = [
         {
           id: '1',
           address: '0x123',
           stream_key: 'key123',
-          usd_total_support: 100,
           created_at: new Date(),
           updated_at: new Date(),
           deleted_at: null,
-          bio: { username: 'testuser' },
-          configuration: null,
+          usd_total_given: 0,
+          usd_total_receive: 0,
         },
       ];
 
-      prisma.$transaction.mockResolvedValue([streamers, 1]);
+      prisma.$transaction.mockResolvedValue([users, 1]);
 
       const result = await service.query(
         { limit: 10, page: 1, q: '' },
         { bio: { username: 'testuser' } },
       );
-      expect(result).toEqual({ streamers, count: 1 });
+      expect(result).toEqual({ users, count: 1 });
     });
 
     it('should throw error when query fails', async () => {
@@ -114,89 +111,96 @@ describe('StreamerService', () => {
   });
 
   describe('delete', () => {
-    it('should soft delete a streamer', async () => {
-      const streamer = {
+    it('should soft delete a user', async () => {
+      const user: User = {
         id: '1',
         address: '0x123',
         stream_key: 'key123',
-        usd_total_support: 100,
         created_at: new Date(),
         updated_at: new Date(),
         deleted_at: new Date(),
+        usd_total_given: 0,
+        usd_total_receive: 0,
       };
 
-      prisma.streamer.update.mockResolvedValue(streamer);
+      prisma.user.update.mockResolvedValue(user);
       const result = await service.delete('1');
       expect(result.deleted_at).toBeDefined();
     });
 
-    it('should throw error when deleting non-existent streamer', async () => {
-      prisma.streamer.update.mockRejectedValue(new Error('Streamer not found'));
-      await expect(service.delete('999')).rejects.toThrow('Streamer not found');
+    it('should throw error when deleting non-existent user', async () => {
+      prisma.user.update.mockRejectedValue(new Error('User not found'));
+      await expect(service.delete('999')).rejects.toThrow('User not found');
     });
   });
 
   describe('update', () => {
     it('should update streamer details', async () => {
-      const updatedStreamer = {
+      const user: User = {
         id: '1',
         address: '0x123',
         stream_key: 'new_key',
-        usd_total_support: 200,
         created_at: new Date(),
         updated_at: new Date(),
         deleted_at: null,
+        usd_total_given: 200,
+        usd_total_receive: 100,
       };
 
-      prisma.streamer.update.mockResolvedValue(updatedStreamer);
+      prisma.user.update.mockResolvedValue(user);
 
       const result = await service.update('1', {
         stream_key: 'new_key',
-        usd_total_support: 200,
+        usd_total_given: 200,
+        usd_total_receive: 100,
       });
 
-      expect(result).toEqual(updatedStreamer);
+      expect(result).toEqual(user);
       expect(result.stream_key).toBe('new_key');
-      expect(result.usd_total_support).toBe(200);
+      expect(result.usd_total_given).toBe(200);
+      expect(result.usd_total_receive).toBe(100);
     });
 
-    it('should throw error when updating non-existent streamer', async () => {
-      prisma.streamer.update.mockRejectedValue(new Error('Streamer not found'));
+    it('should throw error when updating non-existent user', async () => {
+      prisma.user.update.mockRejectedValue(new Error('User not found'));
       await expect(
         service.update('999', { stream_key: 'new_key' }),
-      ).rejects.toThrow('Streamer not found');
+      ).rejects.toThrow('User not found');
     });
   });
 
   describe('create', () => {
-    it('should create a streamer', async () => {
-      const streamer: Streamer = {
+    it('should create a user', async () => {
+      const user: User = {
         id: '1',
         address: '0x',
         stream_key: 'stream_key',
-        usd_total_support: 0,
         created_at: new Date(),
         updated_at: new Date(),
         deleted_at: null,
+        usd_total_given: 0,
+        usd_total_receive: 0,
       };
 
-      prisma.streamer.create.mockResolvedValue(streamer);
+      prisma.user.create.mockResolvedValue(user);
       expect(
         await service.create({
           address: '0x',
           stream_key: 'stream_key',
-          usd_total_support: 0,
+          usd_total_given: 0,
+          usd_total_receive: 0,
         }),
-      ).toEqual(streamer);
+      ).toEqual(user);
     });
 
-    it('should throw error when creating streamer fails', async () => {
-      prisma.streamer.create.mockRejectedValue(new Error('Creation failed'));
+    it('should throw error when creating user fails', async () => {
+      prisma.user.create.mockRejectedValue(new Error('Creation failed'));
       await expect(
         service.create({
           address: '0x',
           stream_key: 'stream_key',
-          usd_total_support: 0,
+          usd_total_given: 0,
+          usd_total_receive: 0,
         }),
       ).rejects.toThrow('Creation failed');
     });

@@ -1,23 +1,21 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { Prisma, Streamer } from '@prisma/client';
+import { Prisma, User } from '@prisma/client';
 import { PrismaService } from 'src/prisma.service';
 import { generateCustomId } from 'src/utils/utils';
 import {
-  GetStreamerResultDTO,
-  QueryStreamerDTO,
-  QueryStreamerResultDTO,
-} from './dto/streamer.dto';
+  GetUserResultDTO,
+  QueryUserDTO,
+  QueryUserResultDTO,
+} from './dto/user.dto';
 
 @Injectable()
-export class StreamerService {
+export class UserService {
   constructor(private readonly prismaService: PrismaService) {}
-  private readonly logger = new Logger(StreamerService.name);
+  private readonly logger = new Logger(UserService.name);
 
-  async get(
-    payload: Prisma.StreamerWhereInput,
-  ): Promise<GetStreamerResultDTO | null> {
+  async get(payload: Prisma.UserWhereInput): Promise<GetUserResultDTO | null> {
     try {
-      return await this.prismaService.streamer.findFirst({
+      return await this.prismaService.user.findFirst({
         where: payload,
         include: {
           bio: true,
@@ -25,18 +23,18 @@ export class StreamerService {
         },
       });
     } catch (error) {
-      this.logger.error('Error in getStreamer', error);
+      this.logger.error('Error in getUser', error);
       throw error;
     }
   }
 
   async query(
-    query: QueryStreamerDTO,
-    opt?: Prisma.StreamerWhereInput,
-  ): Promise<QueryStreamerResultDTO> {
+    query: QueryUserDTO,
+    opt?: Prisma.UserWhereInput,
+  ): Promise<QueryUserResultDTO> {
     try {
       const { limit, page, q } = query;
-      const whereQuery: Prisma.StreamerWhereInput = {
+      const whereQuery: Prisma.UserWhereInput = {
         OR: [
           {
             address: {
@@ -56,42 +54,40 @@ export class StreamerService {
         }
       }
 
-      const [streamers, count] = await this.prismaService.$transaction([
-        this.prismaService.streamer.findMany({
+      const [users, count] = await this.prismaService.$transaction([
+        this.prismaService.user.findMany({
           where: whereQuery,
           take: limit,
           skip: (page - 1) * limit,
           orderBy: {
-            usd_total_support: 'desc',
+            usd_total_receive: 'desc',
           },
           include: {
             bio: true,
             configuration: true,
           },
         }),
-        this.prismaService.streamer.count({
+        this.prismaService.user.count({
           where: whereQuery,
         }),
       ]);
 
       return {
-        streamers,
+        users,
         count,
       };
     } catch (error) {
-      this.logger.error('Error in queryStreamer', error);
+      this.logger.error('Error in queryUser', error);
       throw error;
     }
   }
 
-  async create(
-    paylod: Prisma.StreamerCreateInput,
-  ): Promise<GetStreamerResultDTO> {
+  async create(paylod: Prisma.UserCreateInput): Promise<GetUserResultDTO> {
     try {
-      return await this.prismaService.streamer.create({
+      return await this.prismaService.user.create({
         data: {
           ...paylod,
-          id: generateCustomId('str'),
+          id: generateCustomId('usr'),
           stream_key: generateCustomId('SK'),
         },
         include: {
@@ -100,14 +96,14 @@ export class StreamerService {
         },
       });
     } catch (error) {
-      this.logger.error('Error in createStreamer', error);
+      this.logger.error('Error in createUser', error);
       throw error;
     }
   }
 
-  async delete(id: string): Promise<Streamer> {
+  async delete(id: string): Promise<User> {
     try {
-      return await this.prismaService.streamer.update({
+      return await this.prismaService.user.update({
         where: {
           id,
         },
@@ -116,24 +112,21 @@ export class StreamerService {
         },
       });
     } catch (error) {
-      this.logger.error('Error in deleteStreamer', error);
+      this.logger.error('Error in deleteUser', error);
       throw error;
     }
   }
 
-  async update(
-    id: string,
-    payload: Prisma.StreamerUpdateInput,
-  ): Promise<Streamer> {
+  async update(id: string, payload: Prisma.UserUpdateInput): Promise<User> {
     try {
-      return await this.prismaService.streamer.update({
+      return await this.prismaService.user.update({
         where: {
           id,
         },
         data: payload,
       });
     } catch (error) {
-      this.logger.error('Error in updateStreamer', error);
+      this.logger.error('Error in updateUser', error);
       throw error;
     }
   }

@@ -20,19 +20,17 @@ enum AnalyticType {
 }
 
 model Bio {
-  id          String   @id @default(cuid())
-  username    String   @unique
-  bio         String?
-  image       String?
-  x           String?
-  tiktok      String?
-  instagram   String?
-  youtube     String?
-  website     String?
-  streamer    Streamer @relation(fields: [streamer_id], references: [id])
-  streamer_id String   @unique
-  viewer      Viewer   @relation(fields: [viewer_id], references: [id])
-  viewer_id   String   @unique
+  id        String  @id @default(cuid())
+  username  String  @unique
+  bio       String?
+  image     String?
+  x         String?
+  tiktok    String?
+  instagram String?
+  youtube   String?
+  website   String?
+  user      User    @relation(fields: [user_id], references: [id])
+  user_id   String  @unique
 
   created_at DateTime  @default(now())
   updated_at DateTime  @updatedAt
@@ -40,17 +38,17 @@ model Bio {
 }
 
 model Configuration {
-  id          String   @id @default(cuid())
-  alert       Json?
-  mediashare  Json?
-  qr_code     Json?
-  marquee     Json?
-  subhaton    Json?
-  voting      Json?
-  milestone   Json?
-  live_ads    Json?
-  streamer    Streamer @relation(fields: [streamer_id], references: [id])
-  streamer_id String   @unique
+  id         String @id @default(cuid())
+  alert      Json?
+  mediashare Json?
+  qr_code    Json?
+  marquee    Json?
+  subhaton   Json?
+  voting     Json?
+  milestone  Json?
+  live_ads   Json?
+  user       User   @relation(fields: [user_id], references: [id])
+  user_id    String @unique
 
   created_at DateTime  @default(now())
   updated_at DateTime  @updatedAt
@@ -89,31 +87,21 @@ model Token {
   deleted_at DateTime?
 }
 
-model Viewer {
-  id                        String                    @id @default(cuid())
-  address                   String                    @unique
-  usd_total_support         Float
-  bio                       Bio?
-  support                   Support[]
-  top_support               TopSupport[]
-  top_supporter             TopSupporter[]
-  analytics_generous_viewer AnalyticsGenerousViewer[]
-
-  created_at DateTime  @default(now())
-  updated_at DateTime  @updatedAt
-  deleted_at DateTime?
-}
-
-model Streamer {
+model User {
   id                               String                          @id @default(cuid())
+  bio                              Bio?
+  configuration                    Configuration?
   address                          String                          @unique
   stream_key                       String?
-  usd_total_support                Float
-  configuration                    Configuration?
-  bio                              Bio?
-  support                          Support[]
-  top_support                      TopSupport[]
-  top_supporter                    TopSupporter[]
+  usd_total_receive                Float                           @default(0)
+  usd_total_given                  Float                           @default(0)
+  support_received                 Support[]                       @relation("from")
+  support_given                    Support[]                       @relation("to")
+  top_supporter_streamer           TopSupporter[]                  @relation("streamer")
+  top_supporter_viewer             TopSupporter[]                  @relation("viewer")
+  top_support_streamer             TopSupport[]                    @relation("streamer")
+  top_support_viewer               TopSupport[]                    @relation("viewer")
+  analytics_generous_viewer        AnalyticsGenerousViewer[]
   analytics_streamer_fee_collector AnalyticsStreamerFeeCollector[]
 
   created_at DateTime  @default(now())
@@ -129,9 +117,9 @@ model Support {
   data             String
   token            Token        @relation(fields: [token_id], references: [id])
   token_id         String
-  from             Viewer       @relation(fields: [from_id], references: [id])
+  from             User         @relation("from", fields: [from_id], references: [id])
   from_id          String
-  to               Streamer     @relation(fields: [to_id], references: [id])
+  to               User         @relation("to", fields: [to_id], references: [id])
   to_id            String
   fee_collector    FeeCollector @relation(fields: [fee_collector_id], references: [id])
   fee_collector_id String
@@ -142,12 +130,12 @@ model Support {
 }
 
 model TopSupport {
-  id          String   @id @default(cuid())
+  id          String @id @default(cuid())
   value       Float
   count       Int
-  streamer    Streamer @relation(fields: [streamer_id], references: [id])
+  streamer    User   @relation("streamer", fields: [streamer_id], references: [id])
   streamer_id String
-  viewer      Viewer   @relation(fields: [viewer_id], references: [id])
+  viewer      User   @relation("viewer", fields: [viewer_id], references: [id])
   viewer_id   String
 
   created_at DateTime  @default(now())
@@ -156,12 +144,12 @@ model TopSupport {
 }
 
 model TopSupporter {
-  id          String   @id @default(cuid())
+  id          String @id @default(cuid())
   value       Float
   count       Int
-  streamer    Streamer @relation(fields: [streamer_id], references: [id])
+  streamer    User   @relation("streamer", fields: [streamer_id], references: [id])
   streamer_id String
-  viewer      Viewer   @relation(fields: [viewer_id], references: [id])
+  viewer      User   @relation("viewer", fields: [viewer_id], references: [id])
   viewer_id   String
 
   created_at DateTime  @default(now())
@@ -186,7 +174,7 @@ model AnalyticsStreamerFeeCollector {
   id          String       @id @default(cuid())
   type        AnalyticType
   usd_amount  Float
-  streamer    Streamer     @relation(fields: [streamer_id], references: [id])
+  streamer    User         @relation(fields: [streamer_id], references: [id])
   streamer_id String
 
   created_at DateTime  @default(now())
@@ -198,7 +186,7 @@ model AnalyticsGenerousViewer {
   id         String       @id @default(cuid())
   type       AnalyticType
   usd_amount Float
-  viewer     Viewer       @relation(fields: [viewer_id], references: [id])
+  viewer     User         @relation(fields: [viewer_id], references: [id])
   viewer_id  String
 
   created_at DateTime  @default(now())
