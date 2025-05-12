@@ -1,9 +1,8 @@
 import { Module } from '@nestjs/common';
 import { ListenerService } from './listener.service';
 import { TokenService } from 'src/token/token.service';
-import { StreamerService } from 'src/user/user.service';
+import { UserService } from 'src/user/user.service';
 import { FeeCollectorService } from 'src/feecollector/feecollector.service';
-import { ViewerService } from 'src/user/viewer.service';
 import { SupportService } from 'src/support/support.service';
 import { CoingeckoModule } from 'src/coingecko/coingecko.module';
 import { TopSupportService } from 'src/top/topsupport.service';
@@ -15,9 +14,8 @@ import { ChainService } from 'src/chain/chain.service';
   providers: [
     ListenerService,
     TokenService,
-    StreamerService,
+    UserService,
     FeeCollectorService,
-    ViewerService,
     SupportService,
     TopSupportService,
     TopSupporterService,

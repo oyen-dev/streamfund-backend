@@ -1,11 +1,8 @@
-/* eslint-disable @typescript-eslint/no-unsafe-member-access */
-/* eslint-disable @typescript-eslint/no-unsafe-assignment */
 import { Controller, Logger } from '@nestjs/common';
 import { ListenerService } from './listener.service';
 import { TokenService } from 'src/token/token.service';
-import { StreamerService } from 'src/user/user.service';
+import { UserService } from 'src/user/user.service';
 import { FeeCollectorService } from 'src/feecollector/feecollector.service';
-import { ViewerService } from 'src/user/viewer.service';
 import { SupportService } from 'src/support/support.service';
 import { CoingeckoService } from 'src/coingecko/coingecko.service';
 import { TopSupportService } from 'src/top/topsupport.service';
@@ -26,9 +23,8 @@ export class ListenerController {
   constructor(
     private readonly listenerService: ListenerService,
     private readonly tokenService: TokenService,
-    private readonly streamerService: StreamerService,
+    private readonly userService: UserService,
     private readonly feeCollectorService: FeeCollectorService,
-    private readonly viewerService: ViewerService,
     private readonly supportService: SupportService,
     private readonly coinGeckoService: CoingeckoService,
     private readonly topSupportService: TopSupportService,
@@ -273,8 +269,8 @@ export class ListenerController {
         tstData,
         tsrData,
       ] = await Promise.all([
-        this.streamerService.get({ address: streamer, deleted_at: null }),
-        this.viewerService.get({ address: from, deleted_at: null }),
+        this.userService.get({ address: streamer, deleted_at: null }),
+        this.userService.get({ address: from, deleted_at: null }),
         this.tokenService.get({
           address: token,
           chain_id: chainData.id,
@@ -308,16 +304,14 @@ export class ListenerController {
       collectorData = collectorData as FeeCollector;
 
       if (streamerData === null) {
-        streamerData = await this.streamerService.create({
+        streamerData = await this.userService.create({
           address: streamer,
-          usd_total_support: 0,
         });
       }
 
       if (viewerData === null) {
-        viewerData = await this.viewerService.create({
+        viewerData = await this.userService.create({
           address: from,
-          usd_total_support: 0,
         });
       }
 

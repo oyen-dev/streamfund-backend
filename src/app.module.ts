@@ -3,7 +3,7 @@ import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { TokenModule } from './token/token.module';
 import { PrismaModule } from './prisma.module';
-import { StreamerModule } from './user/user.module';
+import { UserModule } from './user/user.module';
 import { SupportModule } from './support/support.module';
 import { ListenerModule } from './listener/listener.module';
 import { FeeCollectorModule } from './feecollector/feecollector.module';
@@ -17,7 +17,7 @@ import { AuthModule } from './auth/auth.module';
   imports: [
     PrismaModule,
     TokenModule,
-    StreamerModule,
+    UserModule,
     SupportModule,
     ListenerModule,
     FeeCollectorModule,
