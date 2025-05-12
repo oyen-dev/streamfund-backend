@@ -12,7 +12,6 @@ import { STREAMFUND_FEES } from 'src/utils/constant';
 @Injectable()
 export class SupportService {
   constructor(private readonly prismaService: PrismaService) {}
-
   private readonly logger = new Logger(SupportService.name);
 
   async submitSupport(payload: CreateSupportDTO): Promise<Support> {
@@ -38,10 +37,10 @@ export class SupportService {
             hash,
             usd_amount,
             token_amount,
-            from_id: viewer_id,
-            to_id: streamer_id,
             token_id,
             fee_collector_id: collector_id,
+            from_id: viewer_id,
+            to_id: streamer_id,
           },
         }),
         this.prismaService.feeCollector.update({
@@ -54,9 +53,9 @@ export class SupportService {
             id: collector_id,
           },
         }),
-        this.prismaService.viewer.update({
+        this.prismaService.user.update({
           data: {
-            usd_total_support: {
+            usd_total_given: {
               increment: usd_amount,
             },
           },
@@ -64,9 +63,9 @@ export class SupportService {
             id: viewer_id,
           },
         }),
-        this.prismaService.streamer.update({
+        this.prismaService.user.update({
           data: {
-            usd_total_support: {
+            usd_total_receive: {
               increment: usd_amount,
             },
           },

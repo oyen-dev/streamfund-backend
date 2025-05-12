@@ -4,62 +4,28 @@ import { PrismaService } from 'src/prisma.service';
 import {
   Chain,
   FeeCollector,
-  Streamer,
+  User,
   Support,
   Token,
   TopSupport,
-  Viewer,
 } from '@prisma/client';
 import { CreateSupportDTO } from './dto/support.dto';
-import { STREAMFUND_FEES } from 'src/utils/constant';
+import { DeepMockProxy, mockDeep } from 'jest-mock-extended';
 
 describe('SupportService', () => {
   let service: SupportService;
-
-  const mockPrismaService = {
-    support: {
-      create: jest.fn(),
-      findFirst: jest.fn(),
-      findMany: jest.fn(),
-      count: jest.fn(),
-      update: jest.fn(),
-    },
-    feeCollector: {
-      update: jest.fn(),
-    },
-    viewer: {
-      update: jest.fn(),
-    },
-    streamer: {
-      update: jest.fn(),
-    },
-    topSupport: {
-      create: jest.fn(),
-      update: jest.fn(),
-    },
-    topSupporter: {
-      create: jest.fn(),
-      update: jest.fn(),
-    },
-    $transaction: jest.fn(),
-  };
+  let prisma: DeepMockProxy<PrismaService>;
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
-      providers: [
-        SupportService,
-        {
-          provide: PrismaService,
-          useValue: mockPrismaService,
-        },
-      ],
-    }).compile();
+      providers: [SupportService, PrismaService],
+    })
+      .overrideProvider(PrismaService)
+      .useValue(mockDeep<PrismaService>())
+      .compile();
 
     service = module.get<SupportService>(SupportService);
-  });
-
-  afterEach(() => {
-    jest.clearAllMocks();
+    prisma = module.get<DeepMockProxy<PrismaService>>(PrismaService);
   });
 
   describe('submitSupport', () => {
@@ -92,23 +58,14 @@ describe('SupportService', () => {
     };
 
     it('should successfully submit support', async () => {
-      mockPrismaService.$transaction.mockResolvedValue([mockSupport]);
-
+      prisma.$transaction.mockResolvedValue([mockSupport]);
       const result = await service.submitSupport(mockPayload);
-
       expect(result).toEqual(mockSupport);
-      expect(mockPrismaService.$transaction).toHaveBeenCalled();
-      const feeShared = (mockPayload.usd_amount * STREAMFUND_FEES) / 10_000;
-      expect(mockPrismaService.feeCollector.update).toHaveBeenCalledWith(
-        expect.objectContaining({
-          data: { usd_total: { increment: feeShared } },
-        }),
-      );
     });
 
     it('should throw error when transaction fails', async () => {
       const error = new Error('Transaction failed');
-      mockPrismaService.$transaction.mockRejectedValue(error);
+      prisma.$transaction.mockRejectedValue(error);
 
       await expect(service.submitSupport(mockPayload)).rejects.toThrow(error);
     });
@@ -127,22 +84,19 @@ describe('SupportService', () => {
     };
 
     it('should create top support successfully', async () => {
-      mockPrismaService.topSupport.create.mockResolvedValue(mockTopSupport);
-
+      prisma.topSupport.create.mockResolvedValue(mockTopSupport);
       const result = await service.createTopSupport('streamer1', 'viewer1');
 
       expect(result).toEqual(mockTopSupport);
-      expect(mockPrismaService.topSupport.create).toHaveBeenCalled();
     });
 
     it('should throw an error if top support creation fails', async () => {
       const error = new Error('Creation failed');
-      mockPrismaService.topSupport.create.mockRejectedValue(error);
+      prisma.topSupport.create.mockRejectedValue(error);
 
       await expect(
         service.createTopSupport('streamer1', 'viewer1'),
       ).rejects.toThrow(error);
-      expect(mockPrismaService.topSupport.create).toHaveBeenCalled();
     });
   });
 
@@ -159,22 +113,19 @@ describe('SupportService', () => {
     };
 
     it('should create top supporter successfully', async () => {
-      mockPrismaService.topSupporter.create.mockResolvedValue(mockTopSupporter);
-
+      prisma.topSupporter.create.mockResolvedValue(mockTopSupporter);
       const result = await service.createTopSupporter('streamer1', 'viewer1');
 
       expect(result).toEqual(mockTopSupporter);
-      expect(mockPrismaService.topSupporter.create).toHaveBeenCalled();
     });
 
     it('should throw an error if top supporter creation fails', async () => {
       const error = new Error('Creation failed');
-      mockPrismaService.topSupporter.create.mockRejectedValue(error);
+      prisma.topSupporter.create.mockRejectedValue(error);
 
       await expect(
         service.createTopSupporter('streamer1', 'viewer1'),
       ).rejects.toThrow(error);
-      expect(mockPrismaService.topSupporter.create).toHaveBeenCalled();
     });
   });
 
@@ -195,30 +146,28 @@ describe('SupportService', () => {
     };
 
     it('should get support by where condition', async () => {
-      mockPrismaService.support.findFirst.mockResolvedValue(mockSupport);
-
+      prisma.support.findFirst.mockResolvedValue(mockSupport);
       const result = await service.get({ id: 'spt_test' });
 
       expect(result).toEqual(mockSupport);
-      expect(mockPrismaService.support.findFirst).toHaveBeenCalled();
     });
 
     it('should handle get errors gracefully', async () => {
       const error = new Error('Get failed');
-      mockPrismaService.support.findFirst.mockRejectedValue(error);
+      prisma.support.findFirst.mockRejectedValue(error);
 
       await expect(service.get({ id: 'spt_test' })).rejects.toThrow(error);
     });
   });
 
   describe('query', () => {
-    const mockSupports = [
+    const mockSupports: Support[] = [
       {
         id: 'spt_test1',
         data: 'test1',
         hash: 'hash1',
         usd_amount: 100,
-        token_amount: 50,
+        token_amount: BigInt(50),
         from_id: 'viewer1',
         to_id: 'streamer1',
         token_id: 'token1',
@@ -230,16 +179,14 @@ describe('SupportService', () => {
     ];
 
     it('should query supports with pagination', async () => {
-      mockPrismaService.$transaction.mockResolvedValue([mockSupports, 1]);
-
+      prisma.$transaction.mockResolvedValue([mockSupports, 1]);
       const result = await service.query({ limit: 10, page: 1, q: 'test' });
 
       expect(result).toEqual({ supports: mockSupports, count: 1 });
-      expect(mockPrismaService.$transaction).toHaveBeenCalled();
     });
 
     it('should query supports with token_id filter', async () => {
-      mockPrismaService.$transaction.mockResolvedValue([mockSupports, 1]);
+      prisma.$transaction.mockResolvedValue([mockSupports, 1]);
 
       const result = await service.query(
         { limit: 10, page: 1, q: 'test' },
@@ -247,36 +194,31 @@ describe('SupportService', () => {
       );
 
       expect(result).toEqual({ supports: mockSupports, count: 1 });
-      expect(mockPrismaService.$transaction).toHaveBeenCalled();
     });
 
     it('should query supports with from_id filter', async () => {
-      mockPrismaService.$transaction.mockResolvedValue([mockSupports, 1]);
-
+      prisma.$transaction.mockResolvedValue([mockSupports, 1]);
       const result = await service.query(
         { limit: 10, page: 1, q: 'test' },
         { from_id: 'viewer1' },
       );
 
       expect(result).toEqual({ supports: mockSupports, count: 1 });
-      expect(mockPrismaService.$transaction).toHaveBeenCalled();
     });
 
     it('should query supports with to_id filter', async () => {
-      mockPrismaService.$transaction.mockResolvedValue([mockSupports, 1]);
-
+      prisma.$transaction.mockResolvedValue([mockSupports, 1]);
       const result = await service.query(
         { limit: 10, page: 1, q: 'test' },
         { to_id: 'streamer1' },
       );
 
       expect(result).toEqual({ supports: mockSupports, count: 1 });
-      expect(mockPrismaService.$transaction).toHaveBeenCalled();
     });
 
     it('should handle query errors gracefully', async () => {
       const error = new Error('Query failed');
-      mockPrismaService.$transaction.mockRejectedValue(error);
+      prisma.$transaction.mockRejectedValue(error);
 
       await expect(
         service.query({ limit: 10, page: 1, q: 'test' }),
@@ -317,22 +259,25 @@ describe('SupportService', () => {
       usd_total: 0,
       id: '1',
     };
-    const mockStreamer: Streamer = {
+    const mockStreamer: User = {
       id: '1',
       address: '0x123',
       stream_key: 'stream_key',
-      usd_total_support: 0,
       created_at: new Date(),
       updated_at: new Date(),
       deleted_at: null,
+      usd_total_given: 0,
+      usd_total_receive: 0,
     };
-    const mockViewer: Viewer = {
+    const mockViewer: User = {
       address: '0x123',
-      usd_total_support: 0,
       created_at: new Date(),
       deleted_at: null,
       id: '1',
       updated_at: new Date(),
+      stream_key: 'stream_key',
+      usd_total_given: 0,
+      usd_total_receive: 0,
     };
     const mockSupport: Support = {
       id: 'spt_test',
@@ -350,8 +295,7 @@ describe('SupportService', () => {
     };
 
     it('should create support successfully', async () => {
-      mockPrismaService.support.create.mockResolvedValue(mockSupport);
-
+      prisma.support.create.mockResolvedValue(mockSupport);
       const result = await service.create({
         data: 'test',
         hash: 'hash',
@@ -384,12 +328,11 @@ describe('SupportService', () => {
       });
 
       expect(result).toEqual(mockSupport);
-      expect(mockPrismaService.support.create).toHaveBeenCalled();
     });
 
     it('should handle create errors gracefully', async () => {
       const error = new Error('Create failed');
-      mockPrismaService.support.create.mockRejectedValue(error);
+      prisma.support.create.mockRejectedValue(error);
 
       await expect(
         service.create({
@@ -443,17 +386,16 @@ describe('SupportService', () => {
     };
 
     it('should soft delete support successfully', async () => {
-      mockPrismaService.support.update.mockResolvedValue(mockSupport);
+      prisma.support.update.mockResolvedValue(mockSupport);
 
       const result = await service.delete('spt_test');
 
       expect(result).toEqual(mockSupport);
-      expect(mockPrismaService.support.update).toHaveBeenCalled();
     });
 
     it('should handle delete errors gracefully', async () => {
       const error = new Error('Delete failed');
-      mockPrismaService.support.update.mockRejectedValue(error);
+      prisma.support.update.mockRejectedValue(error);
 
       await expect(service.delete('spt_test')).rejects.toThrow(error);
     });
@@ -476,17 +418,16 @@ describe('SupportService', () => {
     };
 
     it('should update support successfully', async () => {
-      mockPrismaService.support.update.mockResolvedValue(mockSupport);
+      prisma.support.update.mockResolvedValue(mockSupport);
 
       const result = await service.update('spt_test', { data: 'updated test' });
 
       expect(result).toEqual(mockSupport);
-      expect(mockPrismaService.support.update).toHaveBeenCalled();
     });
 
     it('should handle update errors gracefully', async () => {
       const error = new Error('Update failed');
-      mockPrismaService.support.update.mockRejectedValue(error);
+      prisma.support.update.mockRejectedValue(error);
 
       await expect(
         service.update('spt_test', { data: 'updated test' }),

@@ -2,14 +2,14 @@ import { DeepMockProxy, mockDeep } from 'jest-mock-extended';
 import { TopSupportService } from './topsupport.service';
 import { PrismaService } from 'src/prisma.service';
 import { Test, TestingModule } from '@nestjs/testing';
-import { Streamer, TopSupport, Viewer } from '@prisma/client';
+import { TopSupport, User } from '@prisma/client';
 
 describe('TopSupportService', () => {
   let service: TopSupportService;
   let prisma: DeepMockProxy<PrismaService>;
 
-  let streamer: Streamer;
-  let viewer: Viewer;
+  let streamer: User;
+  let viewer: User;
   let topSupport: TopSupport;
 
   beforeEach(async () => {
@@ -29,7 +29,8 @@ describe('TopSupportService', () => {
       id: '1',
       address: '0x123',
       stream_key: 'key123',
-      usd_total_support: 100,
+      usd_total_given: 0,
+      usd_total_receive: 0,
       created_at: new Date(),
       updated_at: new Date(),
       deleted_at: null,
@@ -37,7 +38,9 @@ describe('TopSupportService', () => {
     viewer = {
       id: '1',
       address: '0x123',
-      usd_total_support: 100,
+      stream_key: 'key123',
+      usd_total_given: 0,
+      usd_total_receive: 0,
       created_at: new Date(),
       updated_at: new Date(),
       deleted_at: null,
